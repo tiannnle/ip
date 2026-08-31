@@ -9,8 +9,7 @@ public class Kairo {
             "____________________________________________________________";
 
     /**
-     * Starts the chatbot and allows the user to add, list, mark, and unmark
-     * tasks.
+     * Starts the chatbot and processes task-related commands.
      *
      * @param args command-line arguments
      */
@@ -57,14 +56,43 @@ public class Kairo {
                 System.out.println("OK, I've marked this task as not done yet:");
                 System.out.println(tasks[taskIndex]);
                 System.out.println(HORIZONTAL_LINE);
-            } else {
-                tasks[taskCount] = new Task(input);
+            } else if (input.startsWith("todo ")) {
+                String description = input.substring("todo ".length());
 
-                System.out.println(HORIZONTAL_LINE);
-                System.out.println("added: " + input);
-                System.out.println(HORIZONTAL_LINE);
-
+                tasks[taskCount] = new Task(description, "T", "");
                 taskCount++;
+
+                printAddedTask(tasks[taskCount - 1], taskCount);
+            } else if (input.startsWith("deadline ")) {
+                String arguments =
+                        input.substring("deadline ".length());
+                String[] parts = arguments.split(" /by ", 2);
+
+                String description = parts[0];
+                String by = parts[1];
+
+                tasks[taskCount] =
+                        new Task(description, "D", " (by: " + by + ")");
+                taskCount++;
+
+                printAddedTask(tasks[taskCount - 1], taskCount);
+            } else if (input.startsWith("event ")) {
+                String arguments = input.substring("event ".length());
+                String[] fromParts = arguments.split(" /from ", 2);
+                String[] toParts = fromParts[1].split(" /to ", 2);
+
+                String description = fromParts[0];
+                String from = toParts[0];
+                String to = toParts[1];
+
+                String timeDetails =
+                        " (from: " + from + " to: " + to + ")";
+
+                tasks[taskCount] =
+                        new Task(description, "E", timeDetails);
+                taskCount++;
+
+                printAddedTask(tasks[taskCount - 1], taskCount);
             }
         }
 
@@ -73,5 +101,22 @@ public class Kairo {
         System.out.println(HORIZONTAL_LINE);
 
         scanner.close();
+    }
+
+    /**
+     * Displays confirmation that a task was added.
+     *
+     * @param task task that was added
+     * @param taskCount number of tasks currently stored
+     */
+    private static void printAddedTask(Task task, int taskCount) {
+        String taskWord = taskCount == 1 ? "task" : "tasks";
+
+        System.out.println(HORIZONTAL_LINE);
+        System.out.println("Got it. I've added this task:");
+        System.out.println(task);
+        System.out.println(
+                "Now you have " + taskCount + " " + taskWord + " in the list.");
+        System.out.println(HORIZONTAL_LINE);
     }
 }
