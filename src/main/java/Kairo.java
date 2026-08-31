@@ -9,13 +9,14 @@ public class Kairo {
             "____________________________________________________________";
 
     /**
-     * Starts the chatbot and echoes the user's commands until the user enters
-     * {@code bye}.
+     * Starts the chatbot and allows the user to add and list tasks.
      *
      * @param args command-line arguments
      */
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        String[] tasks = new String[100];
+        int taskCount = 0;
 
         System.out.println(HORIZONTAL_LINE);
         System.out.println("Hello! I'm Kairo.");
@@ -29,9 +30,22 @@ public class Kairo {
                 break;
             }
 
-            System.out.println(HORIZONTAL_LINE);
-            System.out.println(input);
-            System.out.println(HORIZONTAL_LINE);
+            if (input.equals("list")) {
+                System.out.println(HORIZONTAL_LINE);
+
+                for (int i = 0; i < taskCount; i++) {
+                    System.out.println((i + 1) + ". " + tasks[i]);
+                }
+
+                System.out.println(HORIZONTAL_LINE);
+            } else {
+                tasks[taskCount] = input;
+                taskCount++;
+
+                System.out.println(HORIZONTAL_LINE);
+                System.out.println("added: " + input);
+                System.out.println(HORIZONTAL_LINE);
+            }
         }
 
         System.out.println(HORIZONTAL_LINE);
