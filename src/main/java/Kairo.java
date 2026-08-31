@@ -30,120 +30,10 @@ public class Kairo {
                 break;
             }
 
-            if (input.equals("list")) {
-                System.out.println(HORIZONTAL_LINE);
-
-                for (int i = 0; i < taskCount; i++) {
-                    System.out.println((i + 1) + "." + tasks[i]);
-                }
-
-                System.out.println(HORIZONTAL_LINE);
-            } else if (input.equals("mark")
-                    || input.startsWith("mark ")) {
-                String numberText = input.equals("mark")
-                        ? ""
-                        : input.substring("mark ".length()).trim();
-
-                if (!isValidTaskNumber(numberText, taskCount)) {
-                    printError("Please provide a valid task number to mark.");
-                } else {
-                    int taskIndex = Integer.parseInt(numberText) - 1;
-                    tasks[taskIndex].markAsDone();
-
-                    System.out.println(HORIZONTAL_LINE);
-                    System.out.println(
-                            "Nice! I've marked this task as done:");
-                    System.out.println(tasks[taskIndex]);
-                    System.out.println(HORIZONTAL_LINE);
-                }
-            } else if (input.equals("unmark")
-                    || input.startsWith("unmark ")) {
-                String numberText = input.equals("unmark")
-                        ? ""
-                        : input.substring("unmark ".length()).trim();
-
-                if (!isValidTaskNumber(numberText, taskCount)) {
-                    printError("Please provide a valid task number to unmark.");
-                } else {
-                    int taskIndex = Integer.parseInt(numberText) - 1;
-                    tasks[taskIndex].markAsNotDone();
-
-                    System.out.println(HORIZONTAL_LINE);
-                    System.out.println(
-                            "OK, I've marked this task as not done yet:");
-                    System.out.println(tasks[taskIndex]);
-                    System.out.println(HORIZONTAL_LINE);
-                }
-            } else if (input.equals("todo")
-                    || input.startsWith("todo ")) {
-                String description = input.equals("todo")
-                        ? ""
-                        : input.substring("todo ".length()).trim();
-
-                if (description.isEmpty()) {
-                    printError("The description of a todo cannot be empty.");
-                } else {
-                    tasks[taskCount] = new Todo(description);
-                    taskCount++;
-
-                    printAddedTask(tasks[taskCount - 1], taskCount);
-                }
-            } else if (input.equals("deadline")
-                    || input.startsWith("deadline ")) {
-                String arguments = input.equals("deadline")
-                        ? ""
-                        : input.substring("deadline ".length()).trim();
-
-                int byPosition = arguments.indexOf(" /by ");
-
-                if (byPosition <= 0
-                        || byPosition + " /by ".length()
-                        >= arguments.length()) {
-                    printError(
-                            "Use: deadline DESCRIPTION /by TIME");
-                } else {
-                    String description =
-                            arguments.substring(0, byPosition).trim();
-                    String by = arguments.substring(
-                            byPosition + " /by ".length()).trim();
-
-                    tasks[taskCount] = new Deadline(description, by);
-                    taskCount++;
-
-                    printAddedTask(tasks[taskCount - 1], taskCount);
-                }
-            } else if (input.equals("event")
-                    || input.startsWith("event ")) {
-                String arguments = input.equals("event")
-                        ? ""
-                        : input.substring("event ".length()).trim();
-
-                int fromPosition = arguments.indexOf(" /from ");
-                int toPosition = arguments.indexOf(" /to ");
-
-                if (fromPosition <= 0
-                        || toPosition <= fromPosition + " /from ".length()
-                        || toPosition + " /to ".length()
-                        >= arguments.length()) {
-                    printError(
-                            "Use: event DESCRIPTION /from START /to END");
-                } else {
-                    String description =
-                            arguments.substring(0, fromPosition).trim();
-                    String from = arguments.substring(
-                            fromPosition + " /from ".length(),
-                            toPosition).trim();
-                    String to = arguments.substring(
-                            toPosition + " /to ".length()).trim();
-
-                    tasks[taskCount] = new Event(description, from, to);
-                    taskCount++;
-
-                    printAddedTask(tasks[taskCount - 1], taskCount);
-                }
-            } else {
-                printError(
-                        "I'm sorry, but I don't know what that means.");
+            try {
+                taskCount = processCommand(input, tasks, taskCount);
+            } catch (KairoException exception) {
+                printError(exception.getMessage());
             }
         }
 
@@ -155,20 +45,166 @@ public class Kairo {
     }
 
     /**
-     * Checks whether the input represents an existing task number.
+     * Processes one command entered by the user.
      *
-     * @param numberText task number entered by the user
+     * @param input command entered by the user
+     * @param tasks array containing the tasks
      * @param taskCount number of tasks currently stored
-     * @return true if the task number is valid
+     * @return updated number of stored tasks
+     * @throws KairoException if the command is invalid
      */
-    private static boolean isValidTaskNumber(
-            String numberText, int taskCount) {
+    private static int processCommand(
+            String input, Task[] tasks, int taskCount)
+            throws KairoException {
+
+        if (input.equals("list")) {
+            System.out.println(HORIZONTAL_LINE);
+
+            for (int i = 0; i < taskCount; i++) {
+                System.out.println((i + 1) + "." + tasks[i]);
+            }
+
+            System.out.println(HORIZONTAL_LINE);
+            return taskCount;
+        }
+
+        if (input.equals("mark") || input.startsWith("mark ")) {
+            int taskIndex =
+                    parseTaskIndex(input, "mark", taskCount);
+            tasks[taskIndex].markAsDone();
+
+            System.out.println(HORIZONTAL_LINE);
+            System.out.println("Nice! I've marked this task as done:");
+            System.out.println(tasks[taskIndex]);
+            System.out.println(HORIZONTAL_LINE);
+
+            return taskCount;
+        }
+
+        if (input.equals("unmark") || input.startsWith("unmark ")) {
+            int taskIndex =
+                    parseTaskIndex(input, "unmark", taskCount);
+            tasks[taskIndex].markAsNotDone();
+
+            System.out.println(HORIZONTAL_LINE);
+            System.out.println(
+                    "OK, I've marked this task as not done yet:");
+            System.out.println(tasks[taskIndex]);
+            System.out.println(HORIZONTAL_LINE);
+
+            return taskCount;
+        }
+
+        if (input.equals("todo") || input.startsWith("todo ")) {
+            String description = input.equals("todo")
+                    ? ""
+                    : input.substring("todo ".length()).trim();
+
+            if (description.isEmpty()) {
+                throw new KairoException(
+                        "The description of a todo cannot be empty.");
+            }
+
+            tasks[taskCount] = new Todo(description);
+            taskCount++;
+
+            printAddedTask(tasks[taskCount - 1], taskCount);
+            return taskCount;
+        }
+
+        if (input.equals("deadline")
+                || input.startsWith("deadline ")) {
+            String arguments = input.equals("deadline")
+                    ? ""
+                    : input.substring("deadline ".length()).trim();
+
+            int byPosition = arguments.indexOf(" /by ");
+
+            if (byPosition <= 0
+                    || byPosition + " /by ".length()
+                    >= arguments.length()) {
+                throw new KairoException(
+                        "Use: deadline DESCRIPTION /by TIME");
+            }
+
+            String description =
+                    arguments.substring(0, byPosition).trim();
+            String by = arguments.substring(
+                    byPosition + " /by ".length()).trim();
+
+            tasks[taskCount] = new Deadline(description, by);
+            taskCount++;
+
+            printAddedTask(tasks[taskCount - 1], taskCount);
+            return taskCount;
+        }
+
+        if (input.equals("event") || input.startsWith("event ")) {
+            String arguments = input.equals("event")
+                    ? ""
+                    : input.substring("event ".length()).trim();
+
+            int fromPosition = arguments.indexOf(" /from ");
+            int toPosition = arguments.indexOf(" /to ");
+
+            if (fromPosition <= 0
+                    || toPosition
+                    <= fromPosition + " /from ".length()
+                    || toPosition + " /to ".length()
+                    >= arguments.length()) {
+                throw new KairoException(
+                        "Use: event DESCRIPTION /from START /to END");
+            }
+
+            String description =
+                    arguments.substring(0, fromPosition).trim();
+            String from = arguments.substring(
+                    fromPosition + " /from ".length(),
+                    toPosition).trim();
+            String to = arguments.substring(
+                    toPosition + " /to ".length()).trim();
+
+            tasks[taskCount] = new Event(description, from, to);
+            taskCount++;
+
+            printAddedTask(tasks[taskCount - 1], taskCount);
+            return taskCount;
+        }
+
+        throw new KairoException(
+                "I'm sorry, but I don't know what that means.");
+    }
+
+    /**
+     * Extracts and validates a task index from a command.
+     *
+     * @param input full command entered by the user
+     * @param command command word, such as mark or unmark
+     * @param taskCount number of tasks currently stored
+     * @return zero-based task index
+     * @throws KairoException if the task number is invalid
+     */
+    private static int parseTaskIndex(
+            String input, String command, int taskCount)
+            throws KairoException {
+        String numberText = input.equals(command)
+                ? ""
+                : input.substring((command + " ").length()).trim();
+
         if (!numberText.matches("\\d{1,3}")) {
-            return false;
+            throw new KairoException(
+                    "Please provide a valid task number to "
+                            + command + ".");
         }
 
         int taskNumber = Integer.parseInt(numberText);
-        return taskNumber >= 1 && taskNumber <= taskCount;
+
+        if (taskNumber < 1 || taskNumber > taskCount) {
+            throw new KairoException(
+                    "Task number " + taskNumber + " does not exist.");
+        }
+
+        return taskNumber - 1;
     }
 
     /**
@@ -184,7 +220,8 @@ public class Kairo {
         System.out.println("Got it. I've added this task:");
         System.out.println(task);
         System.out.println(
-                "Now you have " + taskCount + " " + taskWord + " in the list.");
+                "Now you have " + taskCount + " " + taskWord
+                        + " in the list.");
         System.out.println(HORIZONTAL_LINE);
     }
 
