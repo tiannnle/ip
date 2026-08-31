@@ -5,20 +5,14 @@ public class Task {
 
     protected String description;
     protected boolean isDone;
-    protected String taskType;
-    protected String timeDetails;
 
     /**
-     * Creates a task with its type and optional time information.
+     * Creates an incomplete task with the given description.
      *
      * @param description description of the task
-     * @param taskType letter representing the task type
-     * @param timeDetails formatted time information
      */
-    public Task(String description, String taskType, String timeDetails) {
+    public Task(String description) {
         this.description = description;
-        this.taskType = taskType;
-        this.timeDetails = timeDetails;
         this.isDone = false;
     }
 
@@ -46,13 +40,12 @@ public class Task {
     }
 
     /**
-     * Returns the task in its display format.
+     * Returns the task's completion status and description.
      *
-     * @return formatted task type, status, description, and time details
+     * @return formatted task
      */
     @Override
     public String toString() {
-        return "[" + taskType + "][" + getStatusIcon() + "] "
-                + description + timeDetails;
+        return "[" + getStatusIcon() + "] " + description;
     }
 }

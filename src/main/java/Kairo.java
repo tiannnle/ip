@@ -59,20 +59,18 @@ public class Kairo {
             } else if (input.startsWith("todo ")) {
                 String description = input.substring("todo ".length());
 
-                tasks[taskCount] = new Task(description, "T", "");
+                tasks[taskCount] = new Todo(description);
                 taskCount++;
 
                 printAddedTask(tasks[taskCount - 1], taskCount);
             } else if (input.startsWith("deadline ")) {
-                String arguments =
-                        input.substring("deadline ".length());
+                String arguments = input.substring("deadline ".length());
                 String[] parts = arguments.split(" /by ", 2);
 
                 String description = parts[0];
                 String by = parts[1];
 
-                tasks[taskCount] =
-                        new Task(description, "D", " (by: " + by + ")");
+                tasks[taskCount] = new Deadline(description, by);
                 taskCount++;
 
                 printAddedTask(tasks[taskCount - 1], taskCount);
@@ -85,11 +83,7 @@ public class Kairo {
                 String from = toParts[0];
                 String to = toParts[1];
 
-                String timeDetails =
-                        " (from: " + from + " to: " + to + ")";
-
-                tasks[taskCount] =
-                        new Task(description, "E", timeDetails);
+                tasks[taskCount] = new Event(description, from, to);
                 taskCount++;
 
                 printAddedTask(tasks[taskCount - 1], taskCount);
