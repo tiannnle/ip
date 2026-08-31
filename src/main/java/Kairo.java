@@ -16,8 +16,7 @@ public class Kairo {
      */
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        String[] tasks = new String[100];
-        boolean[] isDone = new boolean[100];
+        Task[] tasks = new Task[100];
         int taskCount = 0;
 
         System.out.println(HORIZONTAL_LINE);
@@ -36,38 +35,36 @@ public class Kairo {
                 System.out.println(HORIZONTAL_LINE);
 
                 for (int i = 0; i < taskCount; i++) {
-                    String statusIcon = isDone[i] ? "X" : " ";
-                    System.out.println(
-                            (i + 1) + ".[" + statusIcon + "] " + tasks[i]);
+                    System.out.println((i + 1) + "." + tasks[i]);
                 }
 
                 System.out.println(HORIZONTAL_LINE);
             } else if (input.startsWith("mark ")) {
                 int taskIndex =
                         Integer.parseInt(input.substring("mark ".length())) - 1;
-                isDone[taskIndex] = true;
+                tasks[taskIndex].markAsDone();
 
                 System.out.println(HORIZONTAL_LINE);
                 System.out.println("Nice! I've marked this task as done:");
-                System.out.println("[X] " + tasks[taskIndex]);
+                System.out.println(tasks[taskIndex]);
                 System.out.println(HORIZONTAL_LINE);
             } else if (input.startsWith("unmark ")) {
                 int taskIndex =
                         Integer.parseInt(input.substring("unmark ".length())) - 1;
-                isDone[taskIndex] = false;
+                tasks[taskIndex].markAsNotDone();
 
                 System.out.println(HORIZONTAL_LINE);
                 System.out.println("OK, I've marked this task as not done yet:");
-                System.out.println("[ ] " + tasks[taskIndex]);
+                System.out.println(tasks[taskIndex]);
                 System.out.println(HORIZONTAL_LINE);
             } else {
-                tasks[taskCount] = input;
-                isDone[taskCount] = false;
-                taskCount++;
+                tasks[taskCount] = new Task(input);
 
                 System.out.println(HORIZONTAL_LINE);
                 System.out.println("added: " + input);
                 System.out.println(HORIZONTAL_LINE);
+
+                taskCount++;
             }
         }
 
