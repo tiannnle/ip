@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
@@ -15,8 +16,7 @@ public class Kairo {
      */
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        Task[] tasks = new Task[100];
-        int taskCount = 0;
+        ArrayList<Task> tasks = new ArrayList<>();
 
         System.out.println(HORIZONTAL_LINE);
         System.out.println("Hello! I'm Kairo.");
@@ -31,7 +31,7 @@ public class Kairo {
             }
 
             try {
-                taskCount = processCommand(input, tasks, taskCount);
+                processCommand(input, tasks);
             } catch (KairoException exception) {
                 printError(exception.getMessage());
             }
@@ -48,77 +48,69 @@ public class Kairo {
      * Processes one command entered by the user.
      *
      * @param input command entered by the user
-     * @param tasks array containing the tasks
-     * @param taskCount number of tasks currently stored
-     * @return updated number of stored tasks
+     * @param tasks list containing the tasks
      * @throws KairoException if the command is invalid
      */
-    private static int processCommand(
-            String input, Task[] tasks, int taskCount)
+    private static void processCommand(
+            String input, ArrayList<Task> tasks)
             throws KairoException {
 
         if (input.equals("list")) {
             System.out.println(HORIZONTAL_LINE);
 
-            for (int i = 0; i < taskCount; i++) {
-                System.out.println((i + 1) + "." + tasks[i]);
+            for (int i = 0; i < tasks.size(); i++) {
+                System.out.println((i + 1) + "." + tasks.get(i));
             }
 
             System.out.println(HORIZONTAL_LINE);
-            return taskCount;
+            return;
         }
 
         if (input.equals("mark") || input.startsWith("mark ")) {
             int taskIndex =
-                    parseTaskIndex(input, "mark", taskCount);
-            tasks[taskIndex].markAsDone();
+                    parseTaskIndex(input, "mark", tasks.size());
+            tasks.get(taskIndex).markAsDone();
 
             System.out.println(HORIZONTAL_LINE);
             System.out.println("Nice! I've marked this task as done:");
-            System.out.println(tasks[taskIndex]);
+            System.out.println(tasks.get(taskIndex));
             System.out.println(HORIZONTAL_LINE);
 
-            return taskCount;
+            return;
         }
 
-        if (input.equals("unmark") || input.startsWith("unmark ")) {
+        if (input.equals("unmark")
+                || input.startsWith("unmark ")) {
             int taskIndex =
-                    parseTaskIndex(input, "unmark", taskCount);
-            tasks[taskIndex].markAsNotDone();
+                    parseTaskIndex(input, "unmark", tasks.size());
+            tasks.get(taskIndex).markAsNotDone();
 
             System.out.println(HORIZONTAL_LINE);
             System.out.println(
                     "OK, I've marked this task as not done yet:");
-            System.out.println(tasks[taskIndex]);
+            System.out.println(tasks.get(taskIndex));
             System.out.println(HORIZONTAL_LINE);
 
-            return taskCount;
+            return;
         }
 
         if (input.equals("delete")
                 || input.startsWith("delete ")) {
             int taskIndex =
-                    parseTaskIndex(input, "delete", taskCount);
-            Task removedTask = tasks[taskIndex];
+                    parseTaskIndex(input, "delete", tasks.size());
+            Task removedTask = tasks.remove(taskIndex);
 
-            for (int i = taskIndex; i < taskCount - 1; i++) {
-                tasks[i] = tasks[i + 1];
-            }
-
-            tasks[taskCount - 1] = null;
-            taskCount--;
-
-            String taskWord = taskCount == 1 ? "task" : "tasks";
+            String taskWord = tasks.size() == 1 ? "task" : "tasks";
 
             System.out.println(HORIZONTAL_LINE);
             System.out.println("Noted. I've removed this task:");
             System.out.println(removedTask);
             System.out.println(
-                    "Now you have " + taskCount + " "
+                    "Now you have " + tasks.size() + " "
                             + taskWord + " in the list.");
             System.out.println(HORIZONTAL_LINE);
 
-            return taskCount;
+            return;
         }
 
         if (input.equals("todo") || input.startsWith("todo ")) {
@@ -131,11 +123,11 @@ public class Kairo {
                         "The description of a todo cannot be empty.");
             }
 
-            tasks[taskCount] = new Todo(description);
-            taskCount++;
+            Task task = new Todo(description);
+            tasks.add(task);
 
-            printAddedTask(tasks[taskCount - 1], taskCount);
-            return taskCount;
+            printAddedTask(task, tasks.size());
+            return;
         }
 
         if (input.equals("deadline")
@@ -158,11 +150,11 @@ public class Kairo {
             String by = arguments.substring(
                     byPosition + " /by ".length()).trim();
 
-            tasks[taskCount] = new Deadline(description, by);
-            taskCount++;
+            Task task = new Deadline(description, by);
+            tasks.add(task);
 
-            printAddedTask(tasks[taskCount - 1], taskCount);
-            return taskCount;
+            printAddedTask(task, tasks.size());
+            return;
         }
 
         if (input.equals("event") || input.startsWith("event ")) {
@@ -190,11 +182,11 @@ public class Kairo {
             String to = arguments.substring(
                     toPosition + " /to ".length()).trim();
 
-            tasks[taskCount] = new Event(description, from, to);
-            taskCount++;
+            Task task = new Event(description, from, to);
+            tasks.add(task);
 
-            printAddedTask(tasks[taskCount - 1], taskCount);
-            return taskCount;
+            printAddedTask(task, tasks.size());
+            return;
         }
 
         throw new KairoException(
@@ -205,7 +197,7 @@ public class Kairo {
      * Extracts and validates a task index from a command.
      *
      * @param input full command entered by the user
-     * @param command command word, such as mark or unmark
+     * @param command command word, such as mark or delete
      * @param taskCount number of tasks currently stored
      * @return zero-based task index
      * @throws KairoException if the task number is invalid
