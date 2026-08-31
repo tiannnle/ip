@@ -95,6 +95,32 @@ public class Kairo {
             return taskCount;
         }
 
+        if (input.equals("delete")
+                || input.startsWith("delete ")) {
+            int taskIndex =
+                    parseTaskIndex(input, "delete", taskCount);
+            Task removedTask = tasks[taskIndex];
+
+            for (int i = taskIndex; i < taskCount - 1; i++) {
+                tasks[i] = tasks[i + 1];
+            }
+
+            tasks[taskCount - 1] = null;
+            taskCount--;
+
+            String taskWord = taskCount == 1 ? "task" : "tasks";
+
+            System.out.println(HORIZONTAL_LINE);
+            System.out.println("Noted. I've removed this task:");
+            System.out.println(removedTask);
+            System.out.println(
+                    "Now you have " + taskCount + " "
+                            + taskWord + " in the list.");
+            System.out.println(HORIZONTAL_LINE);
+
+            return taskCount;
+        }
+
         if (input.equals("todo") || input.startsWith("todo ")) {
             String description = input.equals("todo")
                     ? ""
