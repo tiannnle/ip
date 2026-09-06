@@ -3,6 +3,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.time.format.DateTimeParseException;
 
 /**
  * Handles saving Kairo's tasks to a file.
@@ -65,7 +66,7 @@ public class Storage {
                     tasks.add(parseTask(line));
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | DateTimeParseException e) {
             throw new KairoException("I could not load your saved tasks.");
         }
 
