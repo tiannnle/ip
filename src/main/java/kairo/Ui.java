@@ -89,7 +89,7 @@ public class Ui {
     /**
      * Displays confirmation that a task was deleted.
      *
-     * @param task task that was deleted
+     * @param task      task that was deleted
      * @param taskCount number of remaining tasks
      */
     public void showDeleted(Task task, int taskCount) {
@@ -107,7 +107,7 @@ public class Ui {
     /**
      * Displays confirmation that a task was added.
      *
-     * @param task task that was added
+     * @param task      task that was added
      * @param taskCount number of tasks currently stored
      */
     public void showTaskAdded(Task task, int taskCount) {
