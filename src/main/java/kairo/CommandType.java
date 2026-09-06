@@ -1,4 +1,5 @@
 package kairo;
+
 /**
  * Represents the different commands understood by Kairo.
  */

@@ -24,8 +24,8 @@ public final class Parser {
     /**
      * Extracts and validates a task index.
      *
-     * @param input complete user input
-     * @param command command word
+     * @param input     complete user input
+     * @param command   command word
      * @param taskCount number of available tasks
      * @return zero-based task index
      * @throws KairoException if the task number is invalid

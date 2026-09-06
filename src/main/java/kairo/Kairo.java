@@ -53,8 +53,8 @@ public class Kairo {
      * Processes one command entered by the user.
      *
      * @param commandType type of command entered
-     * @param input complete user input
-     * @param tasks task list
+     * @param input       complete user input
+     * @param tasks       task list
      * @throws KairoException if the command is invalid
      */
     private static void processCommand(
