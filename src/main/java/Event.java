@@ -29,4 +29,14 @@ public class Event extends Task {
         return "[E]" + super.toString()
                 + " (from: " + from + " to: " + to + ")";
     }
+
+    /**
+     * Returns this event in the format used for file storage.
+     *
+     * @return event data formatted for storage
+     */
+    @Override
+    public String toDataString() {
+        return "E | " + super.toDataString() + " | " + from + " | " + to;
+    }
 }

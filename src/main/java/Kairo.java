@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.nio.file.Path;
 
 /**
  * Represents the Kairo chatbot application.
@@ -8,6 +9,9 @@ public class Kairo {
 
     private static final String HORIZONTAL_LINE =
             "____________________________________________________________";
+
+    private static final Storage STORAGE =
+            new Storage(Path.of("data", "kairo.txt"));
 
     /**
      * Starts the chatbot and processes task-related commands.
@@ -22,6 +26,12 @@ public class Kairo {
         System.out.println("Hello! I'm Kairo.");
         System.out.println("What can I do for you?");
         System.out.println(HORIZONTAL_LINE);
+
+        try {
+            tasks.addAll(STORAGE.load());
+        } catch (KairoException exception) {
+            printError(exception.getMessage());
+        }
 
         while (scanner.hasNextLine()) {
             String input = scanner.nextLine().trim();
@@ -72,6 +82,7 @@ public class Kairo {
                 int taskIndex =
                         parseTaskIndex(input, "mark", tasks.size());
                 tasks.get(taskIndex).markAsDone();
+                STORAGE.save(tasks);
 
                 System.out.println(HORIZONTAL_LINE);
                 System.out.println("Nice! I've marked this task as done:");
@@ -83,6 +94,7 @@ public class Kairo {
                 int taskIndex =
                         parseTaskIndex(input, "unmark", tasks.size());
                 tasks.get(taskIndex).markAsNotDone();
+                STORAGE.save(tasks);
 
                 System.out.println(HORIZONTAL_LINE);
                 System.out.println(
@@ -95,6 +107,7 @@ public class Kairo {
                 int taskIndex =
                         parseTaskIndex(input, "delete", tasks.size());
                 Task removedTask = tasks.remove(taskIndex);
+                STORAGE.save(tasks);
 
                 String taskWord = tasks.size() == 1 ? "task" : "tasks";
 
@@ -118,6 +131,7 @@ public class Kairo {
 
                 Task task = new Todo(description);
                 tasks.add(task);
+                STORAGE.save(tasks);
                 printAddedTask(task, tasks.size());
             }
 
@@ -140,6 +154,7 @@ public class Kairo {
 
                 Task task = new Deadline(description, by);
                 tasks.add(task);
+                STORAGE.save(tasks);
                 printAddedTask(task, tasks.size());
             }
 
@@ -169,6 +184,7 @@ public class Kairo {
 
                 Task task = new Event(description, from, to);
                 tasks.add(task);
+                STORAGE.save(tasks);
                 printAddedTask(task, tasks.size());
             }
 
