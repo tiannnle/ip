@@ -14,6 +14,9 @@ import org.junit.jupiter.api.Test;
  */
 class TaskListTest {
 
+    /**
+     * Tests that marking and unmarking update a task's completion status.
+     */
     @Test
     void markAndUnmark_existingTask_updatesCompletionStatus() {
         Task task = new Todo("read book");
@@ -33,6 +36,9 @@ class TaskListTest {
         assertFalse(task.isDone);
     }
 
+    /**
+     * Tests that deleting removes and returns the selected task.
+     */
     @Test
     void delete_existingTask_removesAndReturnsTask() {
         Task task = new Todo("read book");
@@ -45,6 +51,9 @@ class TaskListTest {
         assertEquals(0, taskList.size());
     }
 
+    /**
+     * Tests that modifying the returned list does not modify TaskList.
+     */
     @Test
     void getTasks_returnedListDoesNotModifyOriginalList() {
         TaskList taskList = new TaskList();

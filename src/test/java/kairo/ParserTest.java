@@ -10,6 +10,11 @@ import org.junit.jupiter.api.Test;
  */
 class ParserTest {
 
+    /**
+     * Tests that a valid task number is converted to a zero-based index.
+     *
+     * @throws KairoException if parsing unexpectedly fails
+     */
     @Test
     void parseTaskIndex_validNumber_returnsZeroBasedIndex()
             throws KairoException {
@@ -18,6 +23,9 @@ class ParserTest {
         assertEquals(1, result);
     }
 
+    /**
+     * Tests that a missing task number is rejected.
+     */
     @Test
     void parseTaskIndex_missingNumber_throwsException() {
         assertThrows(
@@ -25,6 +33,9 @@ class ParserTest {
                 () -> Parser.parseTaskIndex("mark", "mark", 3));
     }
 
+    /**
+     * Tests that a non-numeric task number is rejected.
+     */
     @Test
     void parseTaskIndex_nonNumericNumber_throwsException() {
         assertThrows(
@@ -32,6 +43,9 @@ class ParserTest {
                 () -> Parser.parseTaskIndex("mark abc", "mark", 3));
     }
 
+    /**
+     * Tests that a task number outside the list is rejected.
+     */
     @Test
     void parseTaskIndex_outOfRangeNumber_throwsException() {
         assertThrows(
