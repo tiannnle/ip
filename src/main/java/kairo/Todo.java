@@ -1,3 +1,5 @@
+package kairo;
+
 /**
  * Represents a task without any date or time.
  */

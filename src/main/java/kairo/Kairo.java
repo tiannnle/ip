@@ -1,3 +1,5 @@
+package kairo;
+
 import java.nio.file.Path;
 
 /**
