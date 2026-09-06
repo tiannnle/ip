@@ -27,6 +27,12 @@ public class Kairo {
         System.out.println("What can I do for you?");
         System.out.println(HORIZONTAL_LINE);
 
+        try {
+            tasks.addAll(STORAGE.load());
+        } catch (KairoException exception) {
+            printError(exception.getMessage());
+        }
+
         while (scanner.hasNextLine()) {
             String input = scanner.nextLine().trim();
             CommandType commandType = CommandType.fromInput(input);
