@@ -1,3 +1,5 @@
+package kairo;
+
 /**
  * Represents an error caused by an invalid command given to Kairo.
  */

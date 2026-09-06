@@ -1,3 +1,5 @@
+package kairo;
+
 /**
  * Represents a task tracked by Kairo.
  */
