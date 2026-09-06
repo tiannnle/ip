@@ -6,6 +6,7 @@ import java.util.ArrayList;
  * Stores and manages Kairo's task list.
  */
 public class TaskList {
+
     private final ArrayList<Task> tasks;
 
     /**
@@ -18,7 +19,7 @@ public class TaskList {
     /**
      * Creates a task list containing previously loaded tasks.
      *
-     * @param tasks tasks loaded from storage
+     * @param tasks Tasks loaded from storage.
      */
     public TaskList(ArrayList<Task> tasks) {
         this.tasks = new ArrayList<>(tasks);
@@ -27,46 +28,26 @@ public class TaskList {
     /**
      * Returns the number of tasks.
      *
-     * @return number of tasks
+     * @return Number of stored tasks.
      */
     public int size() {
         return tasks.size();
     }
 
     /**
-     * Returns a task at the specified index.
+     * Adds a task to the list.
      *
-     * @param index zero-based task index
-     * @return task at the specified index
-     */
-    public Task get(int index) {
-        return tasks.get(index);
-    }
-
-    /**
-     * Adds a task.
-     *
-     * @param task task to add
+     * @param task Task to add.
      */
     public void add(Task task) {
         tasks.add(task);
     }
 
     /**
-     * Deletes and returns a task.
-     *
-     * @param index zero-based task index
-     * @return deleted task
-     */
-    public Task delete(int index) {
-        return tasks.remove(index);
-    }
-
-    /**
      * Marks a task as completed.
      *
-     * @param index zero-based task index
-     * @return task that was marked
+     * @param index Zero-based task index.
+     * @return Task that was marked.
      */
     public Task mark(int index) {
         Task task = tasks.get(index);
@@ -75,10 +56,10 @@ public class TaskList {
     }
 
     /**
-     * Marks a task as not completed.
+     * Marks a task as incomplete.
      *
-     * @param index zero-based task index
-     * @return task that was unmarked
+     * @param index Zero-based task index.
+     * @return Task that was unmarked.
      */
     public Task unmark(int index) {
         Task task = tasks.get(index);
@@ -87,9 +68,38 @@ public class TaskList {
     }
 
     /**
+     * Deletes a task.
+     *
+     * @param index Zero-based task index.
+     * @return Deleted task.
+     */
+    public Task delete(int index) {
+        return tasks.remove(index);
+    }
+
+    /**
+     * Finds tasks containing the specified keyword in their descriptions.
+     *
+     * @param keyword Keyword to search for.
+     * @return Tasks with matching descriptions.
+     */
+    public ArrayList<Task> find(String keyword) {
+        ArrayList<Task> matchingTasks = new ArrayList<>();
+        String normalizedKeyword = keyword.toLowerCase();
+
+        for (Task task : tasks) {
+            if (task.description.toLowerCase().contains(normalizedKeyword)) {
+                matchingTasks.add(task);
+            }
+        }
+
+        return matchingTasks;
+    }
+
+    /**
      * Returns a copy of the stored tasks.
      *
-     * @return copy of the task list
+     * @return Copy of the task list.
      */
     public ArrayList<Task> getTasks() {
         return new ArrayList<>(tasks);
