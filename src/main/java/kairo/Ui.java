@@ -7,6 +7,7 @@ import java.util.Scanner;
  * Handles interactions between Kairo and the user.
  */
 public class Ui {
+
     private static final String HORIZONTAL_LINE =
             "____________________________________________________________";
 
@@ -30,27 +31,36 @@ public class Ui {
     }
 
     /**
-     * Returns whether another command is available.
+     * Checks whether another command is available.
      *
-     * @return true if another command can be read
+     * @return True if another command can be read.
      */
     public boolean hasNextCommand() {
         return scanner.hasNextLine();
     }
 
     /**
-     * Reads the next command from the user.
+     * Reads the next command.
      *
-     * @return trimmed user command
+     * @return Trimmed command entered by the user.
      */
     public String readCommand() {
         return scanner.nextLine().trim();
     }
 
     /**
-     * Displays all tasks.
+     * Displays Kairo's goodbye message.
+     */
+    public void showGoodbye() {
+        System.out.println(HORIZONTAL_LINE);
+        System.out.println("Bye. Hope to see you again soon!");
+        System.out.println(HORIZONTAL_LINE);
+    }
+
+    /**
+     * Displays all stored tasks.
      *
-     * @param tasks tasks to display
+     * @param tasks Tasks to display.
      */
     public void showTaskList(ArrayList<Task> tasks) {
         System.out.println(HORIZONTAL_LINE);
@@ -63,9 +73,25 @@ public class Ui {
     }
 
     /**
-     * Displays confirmation that a task was marked as done.
+     * Displays tasks matching a search keyword.
      *
-     * @param task task that was marked
+     * @param matchingTasks Matching tasks to display.
+     */
+    public void showMatchingTasks(ArrayList<Task> matchingTasks) {
+        System.out.println(HORIZONTAL_LINE);
+        System.out.println("Here are the matching tasks in your list:");
+
+        for (int i = 0; i < matchingTasks.size(); i++) {
+            System.out.println((i + 1) + "." + matchingTasks.get(i));
+        }
+
+        System.out.println(HORIZONTAL_LINE);
+    }
+
+    /**
+     * Displays confirmation that a task was marked.
+     *
+     * @param task Marked task.
      */
     public void showMarked(Task task) {
         System.out.println(HORIZONTAL_LINE);
@@ -75,9 +101,9 @@ public class Ui {
     }
 
     /**
-     * Displays confirmation that a task was marked as not done.
+     * Displays confirmation that a task was unmarked.
      *
-     * @param task task that was unmarked
+     * @param task Unmarked task.
      */
     public void showUnmarked(Task task) {
         System.out.println(HORIZONTAL_LINE);
@@ -89,8 +115,8 @@ public class Ui {
     /**
      * Displays confirmation that a task was deleted.
      *
-     * @param task task that was deleted
-     * @param taskCount number of remaining tasks
+     * @param task Deleted task.
+     * @param taskCount Number of remaining tasks.
      */
     public void showDeleted(Task task, int taskCount) {
         String taskWord = taskCount == 1 ? "task" : "tasks";
@@ -107,8 +133,8 @@ public class Ui {
     /**
      * Displays confirmation that a task was added.
      *
-     * @param task task that was added
-     * @param taskCount number of tasks currently stored
+     * @param task Added task.
+     * @param taskCount Number of stored tasks.
      */
     public void showTaskAdded(Task task, int taskCount) {
         String taskWord = taskCount == 1 ? "task" : "tasks";
@@ -125,20 +151,11 @@ public class Ui {
     /**
      * Displays an error message.
      *
-     * @param message explanation of the error
+     * @param message Explanation of the error.
      */
     public void showError(String message) {
         System.out.println(HORIZONTAL_LINE);
         System.out.println("OOPS! " + message);
-        System.out.println(HORIZONTAL_LINE);
-    }
-
-    /**
-     * Displays Kairo's goodbye message.
-     */
-    public void showGoodbye() {
-        System.out.println(HORIZONTAL_LINE);
-        System.out.println("Bye. Hope to see you again soon!");
         System.out.println(HORIZONTAL_LINE);
     }
 

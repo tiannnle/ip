@@ -1,42 +1,51 @@
 package kairo;
 
-import java.time.format.DateTimeParseException;
-
 /**
- * Interprets and validates commands entered by the user.
+ * Parses commands and arguments entered by the user.
  */
 public final class Parser {
 
     private Parser() {
-        // Prevents creation of Parser objects.
     }
 
     /**
-     * Identifies the command type.
+     * Determines the command type represented by the input.
      *
-     * @param input complete user input
-     * @return corresponding command type
+     * @param input Complete user input.
+     * @return Corresponding command type.
      */
     public static CommandType parseCommandType(String input) {
-        return CommandType.fromInput(input);
+        String commandWord = input.trim().split("\\s+", 2)[0];
+
+        return switch (commandWord) {
+            case "bye" -> CommandType.BYE;
+            case "list" -> CommandType.LIST;
+            case "mark" -> CommandType.MARK;
+            case "unmark" -> CommandType.UNMARK;
+            case "delete" -> CommandType.DELETE;
+            case "todo" -> CommandType.TODO;
+            case "deadline" -> CommandType.DEADLINE;
+            case "event" -> CommandType.EVENT;
+            case "find" -> CommandType.FIND;
+            default -> CommandType.UNKNOWN;
+        };
     }
 
     /**
-     * Extracts and validates a task index.
+     * Extracts and validates a task index from a command.
      *
-     * @param input complete user input
-     * @param command command word
-     * @param taskCount number of available tasks
-     * @return zero-based task index
-     * @throws KairoException if the task number is invalid
+     * @param input Complete user input.
+     * @param command Command word, such as mark or delete.
+     * @param taskCount Number of tasks currently stored.
+     * @return Zero-based task index.
+     * @throws KairoException If the task number is invalid.
      */
     public static int parseTaskIndex(
             String input, String command, int taskCount)
             throws KairoException {
-        String numberText =
-                input.substring(command.length()).trim();
+        String numberText = input.substring(command.length()).trim();
 
-        if (!numberText.matches("\\d{1,3}")) {
+        if (!numberText.matches("\\d+")) {
             throw new KairoException(
                     "Please provide a valid task number to "
                             + command + ".");
@@ -50,98 +59,5 @@ public final class Parser {
         }
 
         return taskNumber - 1;
-    }
-
-    /**
-     * Creates a todo from user input.
-     *
-     * @param input complete todo command
-     * @return parsed todo
-     * @throws KairoException if the description is empty
-     */
-    public static Task parseTodo(String input) throws KairoException {
-        String description =
-                input.substring("todo".length()).trim();
-
-        if (description.isEmpty()) {
-            throw new KairoException(
-                    "The description of a todo cannot be empty.");
-        }
-
-        return new Todo(description);
-    }
-
-    /**
-     * Creates a deadline from user input.
-     *
-     * @param input complete deadline command
-     * @return parsed deadline
-     * @throws KairoException if the command is invalid
-     */
-    public static Task parseDeadline(String input)
-            throws KairoException {
-        String arguments =
-                input.substring("deadline".length()).trim();
-        int byPosition = arguments.indexOf(" /by ");
-
-        if (byPosition <= 0
-                || byPosition + " /by ".length()
-                >= arguments.length()) {
-            throw new KairoException(
-                    "Use: deadline DESCRIPTION /by DATE");
-        }
-
-        String description =
-                arguments.substring(0, byPosition).trim();
-        String by = arguments.substring(
-                byPosition + " /by ".length()).trim();
-
-        try {
-            return new Deadline(description, by);
-        } catch (DateTimeParseException exception) {
-            throw new KairoException(
-                    "Enter the deadline date in yyyy-MM-dd format.");
-        }
-    }
-
-    /**
-     * Creates an event from user input.
-     *
-     * @param input complete event command
-     * @return parsed event
-     * @throws KairoException if the command is invalid
-     */
-    public static Task parseEvent(String input)
-            throws KairoException {
-        String arguments =
-                input.substring("event".length()).trim();
-
-        int fromPosition = arguments.indexOf(" /from ");
-        int toPosition = arguments.indexOf(" /to ");
-
-        if (fromPosition <= 0
-                || toPosition
-                <= fromPosition + " /from ".length()
-                || toPosition + " /to ".length()
-                >= arguments.length()) {
-            throw new KairoException(
-                    "Use: event DESCRIPTION "
-                            + "/from START_DATE /to END_DATE");
-        }
-
-        String description =
-                arguments.substring(0, fromPosition).trim();
-        String from = arguments.substring(
-                fromPosition + " /from ".length(),
-                toPosition).trim();
-        String to = arguments.substring(
-                toPosition + " /to ".length()).trim();
-
-        try {
-            return new Event(description, from, to);
-        } catch (DateTimeParseException exception) {
-            throw new KairoException(
-                    "Enter the event dates in yyyy-MM-dd format.");
-        }
     }
 }
