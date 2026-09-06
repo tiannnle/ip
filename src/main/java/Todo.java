@@ -21,4 +21,14 @@ public class Todo extends Task {
     public String toString() {
         return "[T]" + super.toString();
     }
+
+    /**
+     * Returns this todo in the format used for file storage.
+     *
+     * @return todo data formatted for storage
+     */
+    @Override
+    public String toDataString() {
+        return "T | " + super.toDataString();
+    }
 }
