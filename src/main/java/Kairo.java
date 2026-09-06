@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.nio.file.Path;
 import java.time.format.DateTimeParseException;
 
@@ -18,14 +17,15 @@ public class Kairo {
      * @param args command-line arguments
      */
     public static void main(String[] args) {
-        ArrayList<Task> tasks = new ArrayList<>();
+        TaskList tasks;
 
         UI.showWelcome();
 
         try {
-            tasks.addAll(STORAGE.load());
+            tasks = new TaskList(STORAGE.load());
         } catch (KairoException exception) {
             UI.showError(exception.getMessage());
+            tasks = new TaskList();
         }
 
         while (UI.hasNextCommand()) {
@@ -52,39 +52,40 @@ public class Kairo {
      *
      * @param commandType type of command entered
      * @param input complete user input
-     * @param tasks list containing the tasks
+     * @param tasks task list
      * @throws KairoException if the command is invalid
      */
     private static void processCommand(
             CommandType commandType, String input,
-            ArrayList<Task> tasks) throws KairoException {
+            TaskList tasks) throws KairoException {
 
         switch (commandType) {
-            case LIST -> UI.showTaskList(tasks);
+            case LIST -> UI.showTaskList(tasks.getTasks());
 
             case MARK -> {
                 int taskIndex =
                         parseTaskIndex(input, "mark", tasks.size());
-                tasks.get(taskIndex).markAsDone();
-                STORAGE.save(tasks);
+                Task task = tasks.mark(taskIndex);
+                STORAGE.save(tasks.getTasks());
 
-                UI.showMarked(tasks.get(taskIndex));
+                UI.showMarked(task);
             }
 
             case UNMARK -> {
                 int taskIndex =
                         parseTaskIndex(input, "unmark", tasks.size());
-                tasks.get(taskIndex).markAsNotDone();
-                STORAGE.save(tasks);
+                Task task = tasks.unmark(taskIndex);
+                STORAGE.save(tasks.getTasks());
 
-                UI.showUnmarked(tasks.get(taskIndex));
+                UI.showUnmarked(task);
             }
 
             case DELETE -> {
                 int taskIndex =
                         parseTaskIndex(input, "delete", tasks.size());
-                Task removedTask = tasks.remove(taskIndex);
-                STORAGE.save(tasks);
+                Task removedTask = tasks.delete(taskIndex);
+                STORAGE.save(tasks.getTasks());
+
                 UI.showDeleted(removedTask, tasks.size());
             }
 
@@ -99,7 +100,7 @@ public class Kairo {
 
                 Task task = new Todo(description);
                 tasks.add(task);
-                STORAGE.save(tasks);
+                STORAGE.save(tasks.getTasks());
                 UI.showTaskAdded(task, tasks.size());
             }
 
@@ -112,7 +113,7 @@ public class Kairo {
                         || byPosition + " /by ".length()
                         >= arguments.length()) {
                     throw new KairoException(
-                            "Use: deadline DESCRIPTION /by TIME");
+                            "Use: deadline DESCRIPTION /by DATE");
                 }
 
                 String description =
@@ -128,8 +129,9 @@ public class Kairo {
                     throw new KairoException(
                             "Enter the deadline date in yyyy-MM-dd format.");
                 }
+
                 tasks.add(task);
-                STORAGE.save(tasks);
+                STORAGE.save(tasks.getTasks());
                 UI.showTaskAdded(task, tasks.size());
             }
 
@@ -146,7 +148,8 @@ public class Kairo {
                         || toPosition + " /to ".length()
                         >= arguments.length()) {
                     throw new KairoException(
-                            "Use: event DESCRIPTION /from START /to END");
+                            "Use: event DESCRIPTION "
+                                    + "/from START_DATE /to END_DATE");
                 }
 
                 String description =
@@ -165,8 +168,9 @@ public class Kairo {
                     throw new KairoException(
                             "Enter the event dates in yyyy-MM-dd format.");
                 }
+
                 tasks.add(task);
-                STORAGE.save(tasks);
+                STORAGE.save(tasks.getTasks());
                 UI.showTaskAdded(task, tasks.size());
             }
 
