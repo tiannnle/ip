@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Scanner;
 import java.nio.file.Path;
 import java.time.format.DateTimeParseException;
 
@@ -8,8 +7,7 @@ import java.time.format.DateTimeParseException;
  */
 public class Kairo {
 
-    private static final String HORIZONTAL_LINE =
-            "____________________________________________________________";
+    private static final Ui UI = new Ui();
 
     private static final Storage STORAGE =
             new Storage(Path.of("data", "kairo.txt"));
@@ -20,22 +18,18 @@ public class Kairo {
      * @param args command-line arguments
      */
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
         ArrayList<Task> tasks = new ArrayList<>();
 
-        System.out.println(HORIZONTAL_LINE);
-        System.out.println("Hello! I'm Kairo.");
-        System.out.println("What can I do for you?");
-        System.out.println(HORIZONTAL_LINE);
+        UI.showWelcome();
 
         try {
             tasks.addAll(STORAGE.load());
         } catch (KairoException exception) {
-            printError(exception.getMessage());
+            UI.showError(exception.getMessage());
         }
 
-        while (scanner.hasNextLine()) {
-            String input = scanner.nextLine().trim();
+        while (UI.hasNextCommand()) {
+            String input = UI.readCommand();
             CommandType commandType = CommandType.fromInput(input);
 
             if (commandType == CommandType.BYE) {
@@ -45,15 +39,12 @@ public class Kairo {
             try {
                 processCommand(commandType, input, tasks);
             } catch (KairoException exception) {
-                printError(exception.getMessage());
+                UI.showError(exception.getMessage());
             }
         }
 
-        System.out.println(HORIZONTAL_LINE);
-        System.out.println("Bye. Hope to see you again soon!");
-        System.out.println(HORIZONTAL_LINE);
-
-        scanner.close();
+        UI.showGoodbye();
+        UI.close();
     }
 
     /**
@@ -69,15 +60,7 @@ public class Kairo {
             ArrayList<Task> tasks) throws KairoException {
 
         switch (commandType) {
-            case LIST -> {
-                System.out.println(HORIZONTAL_LINE);
-
-                for (int i = 0; i < tasks.size(); i++) {
-                    System.out.println((i + 1) + "." + tasks.get(i));
-                }
-
-                System.out.println(HORIZONTAL_LINE);
-            }
+            case LIST -> UI.showTaskList(tasks);
 
             case MARK -> {
                 int taskIndex =
@@ -85,10 +68,7 @@ public class Kairo {
                 tasks.get(taskIndex).markAsDone();
                 STORAGE.save(tasks);
 
-                System.out.println(HORIZONTAL_LINE);
-                System.out.println("Nice! I've marked this task as done:");
-                System.out.println(tasks.get(taskIndex));
-                System.out.println(HORIZONTAL_LINE);
+                UI.showMarked(tasks.get(taskIndex));
             }
 
             case UNMARK -> {
@@ -97,11 +77,7 @@ public class Kairo {
                 tasks.get(taskIndex).markAsNotDone();
                 STORAGE.save(tasks);
 
-                System.out.println(HORIZONTAL_LINE);
-                System.out.println(
-                        "OK, I've marked this task as not done yet:");
-                System.out.println(tasks.get(taskIndex));
-                System.out.println(HORIZONTAL_LINE);
+                UI.showUnmarked(tasks.get(taskIndex));
             }
 
             case DELETE -> {
@@ -109,16 +85,7 @@ public class Kairo {
                         parseTaskIndex(input, "delete", tasks.size());
                 Task removedTask = tasks.remove(taskIndex);
                 STORAGE.save(tasks);
-
-                String taskWord = tasks.size() == 1 ? "task" : "tasks";
-
-                System.out.println(HORIZONTAL_LINE);
-                System.out.println("Noted. I've removed this task:");
-                System.out.println(removedTask);
-                System.out.println(
-                        "Now you have " + tasks.size() + " "
-                                + taskWord + " in the list.");
-                System.out.println(HORIZONTAL_LINE);
+                UI.showDeleted(removedTask, tasks.size());
             }
 
             case TODO -> {
@@ -133,7 +100,7 @@ public class Kairo {
                 Task task = new Todo(description);
                 tasks.add(task);
                 STORAGE.save(tasks);
-                printAddedTask(task, tasks.size());
+                UI.showTaskAdded(task, tasks.size());
             }
 
             case DEADLINE -> {
@@ -163,7 +130,7 @@ public class Kairo {
                 }
                 tasks.add(task);
                 STORAGE.save(tasks);
-                printAddedTask(task, tasks.size());
+                UI.showTaskAdded(task, tasks.size());
             }
 
             case EVENT -> {
@@ -200,7 +167,7 @@ public class Kairo {
                 }
                 tasks.add(task);
                 STORAGE.save(tasks);
-                printAddedTask(task, tasks.size());
+                UI.showTaskAdded(task, tasks.size());
             }
 
             case UNKNOWN -> throw new KairoException(
@@ -244,34 +211,5 @@ public class Kairo {
         }
 
         return taskNumber - 1;
-    }
-
-    /**
-     * Displays confirmation that a task was added.
-     *
-     * @param task task that was added
-     * @param taskCount number of tasks currently stored
-     */
-    private static void printAddedTask(Task task, int taskCount) {
-        String taskWord = taskCount == 1 ? "task" : "tasks";
-
-        System.out.println(HORIZONTAL_LINE);
-        System.out.println("Got it. I've added this task:");
-        System.out.println(task);
-        System.out.println(
-                "Now you have " + taskCount + " " + taskWord
-                        + " in the list.");
-        System.out.println(HORIZONTAL_LINE);
-    }
-
-    /**
-     * Displays an error message.
-     *
-     * @param message explanation of the error
-     */
-    private static void printError(String message) {
-        System.out.println(HORIZONTAL_LINE);
-        System.out.println("OOPS! " + message);
-        System.out.println(HORIZONTAL_LINE);
     }
 }
