@@ -1,10 +1,16 @@
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 /**
  * Represents a task occurring over a specified time period.
  */
 public class Event extends Task {
 
-    private String from;
-    private String to;
+    private static final DateTimeFormatter DISPLAY_DATE_FORMAT =
+            DateTimeFormatter.ofPattern("MMM dd yyyy");
+
+    private LocalDate from;
+    private LocalDate to;
 
     /**
      * Creates an event task.
@@ -15,8 +21,8 @@ public class Event extends Task {
      */
     public Event(String description, String from, String to) {
         super(description);
-        this.from = from;
-        this.to = to;
+        this.from = LocalDate.parse(from);
+        this.to = LocalDate.parse(to);
     }
 
     /**
@@ -27,7 +33,8 @@ public class Event extends Task {
     @Override
     public String toString() {
         return "[E]" + super.toString()
-                + " (from: " + from + " to: " + to + ")";
+                + " (from: " + from.format(DISPLAY_DATE_FORMAT)
+                + " to: " + to.format(DISPLAY_DATE_FORMAT) + ")";
     }
 
     /**
@@ -37,6 +44,7 @@ public class Event extends Task {
      */
     @Override
     public String toDataString() {
-        return "E | " + super.toDataString() + " | " + from + " | " + to;
+        return "E | " + super.toDataString()
+                + " | " + from + " | " + to;
     }
 }

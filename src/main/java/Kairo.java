@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.nio.file.Path;
+import java.time.format.DateTimeParseException;
 
 /**
  * Represents the Kairo chatbot application.
@@ -152,7 +153,14 @@ public class Kairo {
                 String by = arguments.substring(
                         byPosition + " /by ".length()).trim();
 
-                Task task = new Deadline(description, by);
+                Task task;
+
+                try {
+                    task = new Deadline(description, by);
+                } catch (DateTimeParseException exception) {
+                    throw new KairoException(
+                            "Enter the deadline date in yyyy-MM-dd format.");
+                }
                 tasks.add(task);
                 STORAGE.save(tasks);
                 printAddedTask(task, tasks.size());
@@ -182,7 +190,14 @@ public class Kairo {
                 String to = arguments.substring(
                         toPosition + " /to ".length()).trim();
 
-                Task task = new Event(description, from, to);
+                Task task;
+
+                try {
+                    task = new Event(description, from, to);
+                } catch (DateTimeParseException exception) {
+                    throw new KairoException(
+                            "Enter the event dates in yyyy-MM-dd format.");
+                }
                 tasks.add(task);
                 STORAGE.save(tasks);
                 printAddedTask(task, tasks.size());
