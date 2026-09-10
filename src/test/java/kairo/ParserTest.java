@@ -52,4 +52,14 @@ class ParserTest {
                 KairoException.class,
                 () -> Parser.parseTaskIndex("mark 4", "mark", 3));
     }
+
+    /**
+     * Tests that a number larger than an integer produces a user-facing error.
+     */
+    @Test
+    void parseTaskIndex_overflowNumber_throwsException() {
+        assertThrows(
+                KairoException.class,
+                () -> Parser.parseTaskIndex("mark 999999999999999", "mark", 3));
+    }
 }
