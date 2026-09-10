@@ -1,168 +1,142 @@
 package kairo;
 
 import java.util.ArrayList;
-import java.util.Scanner;
 
 /**
- * Handles interactions between Kairo and the user.
+ * Formats responses shared by Kairo's graphical and console interfaces.
  */
 public class Ui {
 
-    private static final String HORIZONTAL_LINE =
-            "____________________________________________________________";
-
-    private final Scanner scanner;
-
     /**
-     * Creates a user interface that reads from standard input.
+     * Creates a response formatter.
      */
     public Ui() {
-        scanner = new Scanner(System.in);
     }
 
     /**
-     * Displays Kairo's welcome message.
-     */
-    public void showWelcome() {
-        System.out.println(HORIZONTAL_LINE);
-        System.out.println("Hello! I'm Kairo.");
-        System.out.println("What can I do for you?");
-        System.out.println(HORIZONTAL_LINE);
-    }
-
-    /**
-     * Checks whether another command is available.
+     * Returns Kairo's greeting.
      *
-     * @return True if another command can be read.
+     * @return Welcome message.
      */
-    public boolean hasNextCommand() {
-        return scanner.hasNextLine();
+    public String getWelcomeMessage() {
+        return "Hello! I'm Kairo.\nWhat can I do for you?";
     }
 
     /**
-     * Reads the next command.
+     * Returns Kairo's farewell.
      *
-     * @return Trimmed command entered by the user.
+     * @return Goodbye message.
      */
-    public String readCommand() {
-        return scanner.nextLine().trim();
+    public String getGoodbyeMessage() {
+        return "Bye. Hope to see you again soon!";
     }
 
     /**
-     * Displays Kairo's goodbye message.
-     */
-    public void showGoodbye() {
-        System.out.println(HORIZONTAL_LINE);
-        System.out.println("Bye. Hope to see you again soon!");
-        System.out.println(HORIZONTAL_LINE);
-    }
-
-    /**
-     * Displays all stored tasks.
+     * Formats the full task list.
      *
      * @param tasks Tasks to display.
+     * @return Numbered tasks or an empty-list message.
      */
-    public void showTaskList(ArrayList<Task> tasks) {
-        System.out.println(HORIZONTAL_LINE);
-
-        for (int i = 0; i < tasks.size(); i++) {
-            System.out.println((i + 1) + "." + tasks.get(i));
+    public String formatTaskList(ArrayList<Task> tasks) {
+        if (tasks.isEmpty()) {
+            return "Your task list is empty.";
         }
-
-        System.out.println(HORIZONTAL_LINE);
+        return "Here are the tasks in your list:\n" + formatNumberedTasks(tasks);
     }
 
     /**
-     * Displays tasks matching a search keyword.
+     * Formats the results of a keyword search.
      *
-     * @param matchingTasks Matching tasks to display.
+     * @param matchingTasks Tasks matching the keyword.
+     * @return Search results or a no-matches message.
      */
-    public void showMatchingTasks(ArrayList<Task> matchingTasks) {
-        System.out.println(HORIZONTAL_LINE);
-        System.out.println("Here are the matching tasks in your list:");
-
-        for (int i = 0; i < matchingTasks.size(); i++) {
-            System.out.println((i + 1) + "." + matchingTasks.get(i));
+    public String formatMatchingTasks(ArrayList<Task> matchingTasks) {
+        if (matchingTasks.isEmpty()) {
+            return "No matching tasks found.";
         }
-
-        System.out.println(HORIZONTAL_LINE);
+        return "Here are the matching tasks in your list:\n"
+                + formatNumberedTasks(matchingTasks);
     }
 
     /**
-     * Displays confirmation that a task was marked.
+     * Formats confirmation that a task was completed.
      *
      * @param task Marked task.
+     * @return Confirmation message.
      */
-    public void showMarked(Task task) {
-        System.out.println(HORIZONTAL_LINE);
-        System.out.println("Nice! I've marked this task as done:");
-        System.out.println(task);
-        System.out.println(HORIZONTAL_LINE);
+    public String formatMarked(Task task) {
+        return "Nice! I've marked this task as done:\n" + task;
     }
 
     /**
-     * Displays confirmation that a task was unmarked.
+     * Formats confirmation that a task was made incomplete.
      *
      * @param task Unmarked task.
+     * @return Confirmation message.
      */
-    public void showUnmarked(Task task) {
-        System.out.println(HORIZONTAL_LINE);
-        System.out.println("OK, I've marked this task as not done yet:");
-        System.out.println(task);
-        System.out.println(HORIZONTAL_LINE);
+    public String formatUnmarked(Task task) {
+        return "OK, I've marked this task as not done yet:\n" + task;
     }
 
     /**
-     * Displays confirmation that a task was deleted.
+     * Formats confirmation that a task was removed.
      *
      * @param task Deleted task.
      * @param taskCount Number of remaining tasks.
+     * @return Confirmation message.
      */
-    public void showDeleted(Task task, int taskCount) {
-        String taskWord = taskCount == 1 ? "task" : "tasks";
-
-        System.out.println(HORIZONTAL_LINE);
-        System.out.println("Noted. I've removed this task:");
-        System.out.println(task);
-        System.out.println(
-                "Now you have " + taskCount + " "
-                        + taskWord + " in the list.");
-        System.out.println(HORIZONTAL_LINE);
+    public String formatDeleted(Task task, int taskCount) {
+        return "Noted. I've removed this task:\n" + task
+                + "\n" + formatTaskCount(taskCount);
     }
 
     /**
-     * Displays confirmation that a task was added.
+     * Formats confirmation that a task was added.
      *
      * @param task Added task.
      * @param taskCount Number of stored tasks.
+     * @return Confirmation message.
      */
-    public void showTaskAdded(Task task, int taskCount) {
-        String taskWord = taskCount == 1 ? "task" : "tasks";
-
-        System.out.println(HORIZONTAL_LINE);
-        System.out.println("Got it. I've added this task:");
-        System.out.println(task);
-        System.out.println(
-                "Now you have " + taskCount + " "
-                        + taskWord + " in the list.");
-        System.out.println(HORIZONTAL_LINE);
+    public String formatTaskAdded(Task task, int taskCount) {
+        return "Got it. I've added this task:\n" + task
+                + "\n" + formatTaskCount(taskCount);
     }
 
     /**
-     * Displays an error message.
+     * Formats an error for display.
      *
      * @param message Explanation of the error.
+     * @return Error response.
      */
-    public void showError(String message) {
-        System.out.println(HORIZONTAL_LINE);
-        System.out.println("OOPS! " + message);
-        System.out.println(HORIZONTAL_LINE);
+    public String formatError(String message) {
+        return "OOPS! " + message;
     }
 
     /**
-     * Closes the input scanner.
+     * Gives each displayed task a one-based number.
+     *
+     * @param tasks Tasks to format.
+     * @return Tasks separated by newlines.
      */
-    public void close() {
-        scanner.close();
+    private String formatNumberedTasks(ArrayList<Task> tasks) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < tasks.size(); i++) {
+            if (i > 0) {
+                result.append("\n");
+            }
+            result.append(i + 1).append(".").append(tasks.get(i));
+        }
+        return result.toString();
+    }
+
+    /**
+     * Formats the task count with the correct singular or plural noun.
+     *
+     * @param taskCount Number of stored tasks.
+     * @return Task-count sentence.
+     */
+    private String formatTaskCount(int taskCount) {
+        String taskWord = taskCount == 1 ? "task" : "tasks";
+        return "Now you have " + taskCount + " " + taskWord + " in the list.";
     }
 }

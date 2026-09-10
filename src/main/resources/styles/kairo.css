@@ -1,0 +1,111 @@
+.root {
+    -fx-font-family: "System";
+    -fx-font-size: 14px;
+    -fx-background-color: #f3f6fb;
+}
+
+.header {
+    -fx-padding: 20 22;
+    -fx-background-color: #182940;
+}
+
+.title {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.subtitle {
+    -fx-font-size: 13px;
+    -fx-text-fill: #c6d5e8;
+}
+
+.scroll-pane, .scroll-pane > .viewport {
+    -fx-background-color: #f3f6fb;
+}
+
+.scroll-pane {
+    -fx-padding: 0;
+    -fx-background-insets: 0;
+}
+
+.dialog-container {
+    -fx-padding: 18;
+}
+
+.bubble {
+    -fx-padding: 12 15;
+    -fx-background-radius: 14;
+}
+
+.kairo-dialog .bubble {
+    -fx-background-color: white;
+    -fx-border-color: #dee6f0;
+    -fx-border-radius: 14;
+}
+
+.user-dialog .bubble {
+    -fx-background-color: #285bd4;
+}
+
+.sender-label {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.kairo-dialog .sender-label {
+    -fx-text-fill: #526582;
+}
+
+.kairo-dialog .message-text {
+    -fx-text-fill: #192d47;
+}
+
+.user-dialog .sender-label {
+    -fx-text-fill: #d5e2ff;
+}
+
+.user-dialog .message-text {
+    -fx-text-fill: white;
+}
+
+.footer {
+    -fx-padding: 14 18;
+    -fx-background-color: white;
+    -fx-border-color: #dde5ee transparent transparent transparent;
+}
+
+.text-field {
+    -fx-padding: 11 12;
+    -fx-background-color: #f3f6fb;
+    -fx-background-radius: 9;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 9;
+}
+
+.text-field:focused {
+    -fx-border-color: #285bd4;
+}
+
+.button {
+    -fx-padding: 12 14;
+    -fx-background-color: #285bd4;
+    -fx-background-radius: 9;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #1d49b0;
+}
+
+.button:focused {
+    -fx-border-color: #8aaefb;
+    -fx-border-radius: 9;
+}
+
+.command-hint {
+    -fx-font-size: 11px;
+    -fx-text-fill: #53657d;
+}

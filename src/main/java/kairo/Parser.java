@@ -51,7 +51,13 @@ public final class Parser {
                             + command + ".");
         }
 
-        int taskNumber = Integer.parseInt(numberText);
+        int taskNumber;
+        try {
+            taskNumber = Integer.parseInt(numberText);
+        } catch (NumberFormatException exception) {
+            throw new KairoException(
+                    "Please provide a valid task number to " + command + ".");
+        }
 
         if (taskNumber < 1 || taskNumber > taskCount) {
             throw new KairoException(
