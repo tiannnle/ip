@@ -1,9 +1,15 @@
 package kairo;
 
+import java.time.format.DateTimeParseException;
+
 /**
  * Parses commands and arguments entered by the user.
  */
 public final class Parser {
+
+    private static final String DEADLINE_MARKER = " /by ";
+    private static final String EVENT_START_MARKER = " /from ";
+    private static final String EVENT_END_MARKER = " /to ";
 
     private Parser() {
     }
@@ -29,6 +35,92 @@ public final class Parser {
             case "find" -> CommandType.FIND;
             default -> CommandType.UNKNOWN;
         };
+    }
+
+    /**
+     * Validates a todo command and creates its task.
+     *
+     * @param input Complete, trimmed todo command.
+     * @return Todo described by the command.
+     * @throws KairoException If the description is empty.
+     */
+    public static Todo parseTodo(String input) throws KairoException {
+        String description = input.substring("todo".length()).trim();
+        if (description.isEmpty()) {
+            throw new KairoException(
+                    "The description of a todo cannot be empty.");
+        }
+        return new Todo(description);
+    }
+
+    /**
+     * Validates a deadline command and creates its task.
+     *
+     * @param input Complete, trimmed deadline command.
+     * @return Deadline described by the command.
+     * @throws KairoException If the description, marker, or date is invalid.
+     */
+    public static Deadline parseDeadline(String input) throws KairoException {
+        String arguments = input.substring("deadline".length()).trim();
+        int byPosition = arguments.indexOf(DEADLINE_MARKER);
+        if (byPosition <= 0
+                || byPosition + DEADLINE_MARKER.length() >= arguments.length()) {
+            throw new KairoException(
+                    "Use: deadline DESCRIPTION /by DATE");
+        }
+        String description = arguments.substring(0, byPosition).trim();
+        String by = arguments.substring(byPosition + DEADLINE_MARKER.length()).trim();
+        try {
+            return new Deadline(description, by);
+        } catch (DateTimeParseException exception) {
+            throw new KairoException(
+                    "Enter the deadline date in yyyy-MM-dd format.");
+        }
+    }
+
+    /**
+     * Validates an event command and creates its task.
+     *
+     * @param input Complete, trimmed event command.
+     * @return Event described by the command.
+     * @throws KairoException If the description, markers, or dates are invalid.
+     */
+    public static Event parseEvent(String input) throws KairoException {
+        String arguments = input.substring("event".length()).trim();
+        int fromPosition = arguments.indexOf(EVENT_START_MARKER);
+        int toPosition = arguments.indexOf(EVENT_END_MARKER);
+        if (fromPosition <= 0
+                || toPosition <= fromPosition + EVENT_START_MARKER.length()
+                || toPosition + EVENT_END_MARKER.length() >= arguments.length()) {
+            throw new KairoException(
+                    "Use: event DESCRIPTION /from START /to END");
+        }
+        String description = arguments.substring(0, fromPosition).trim();
+        String from = arguments.substring(
+                fromPosition + EVENT_START_MARKER.length(), toPosition).trim();
+        String to = arguments.substring(toPosition + EVENT_END_MARKER.length()).trim();
+        try {
+            return new Event(description, from, to);
+        } catch (DateTimeParseException exception) {
+            throw new KairoException(
+                    "Enter the event dates in yyyy-MM-dd format.");
+        }
+    }
+
+    /**
+     * Extracts the non-empty keyword from a find command.
+     *
+     * @param input Complete, trimmed find command.
+     * @return Keyword to match against task descriptions.
+     * @throws KairoException If the keyword is empty.
+     */
+    public static String parseFindKeyword(String input) throws KairoException {
+        String keyword = input.substring("find".length()).trim();
+        if (keyword.isEmpty()) {
+            throw new KairoException(
+                    "Please provide a keyword to find.");
+        }
+        return keyword;
     }
 
     /**
