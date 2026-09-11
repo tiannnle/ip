@@ -1,6 +1,7 @@
 package kairo;
 
 import java.nio.file.Path;
+import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
 /**
@@ -105,15 +106,47 @@ public class Kairo {
             throws KairoException {
         return switch (commandType) {
             case LIST -> ui.formatTaskList(tasks.getTasks());
-            case MARK -> markTask(input);
-            case UNMARK -> unmarkTask(input);
-            case DELETE -> deleteTask(input);
-            case TODO -> addTask(Parser.parseTodo(input));
-            case DEADLINE -> addTask(Parser.parseDeadline(input));
-            case EVENT -> addTask(Parser.parseEvent(input));
-            case FIND -> findTasks(input);
-            case BYE -> exit();
-            default -> throw new KairoException(
+            case MARK -> {
+                int index = Parser.parseTaskIndex(input, "mark", tasks.size());
+                Task task = tasks.mark(index);
+                storage.save(tasks.getTasks());
+                yield ui.formatMarked(task);
+            }
+            case UNMARK -> {
+                int index = Parser.parseTaskIndex(input, "unmark", tasks.size());
+                Task task = tasks.unmark(index);
+                storage.save(tasks.getTasks());
+                yield ui.formatUnmarked(task);
+            }
+            case DELETE -> {
+                int index = Parser.parseTaskIndex(input, "delete", tasks.size());
+                Task task = tasks.delete(index);
+                storage.save(tasks.getTasks());
+                yield ui.formatDeleted(task, tasks.size());
+            }
+            case TODO -> {
+                String description = input.substring("todo".length()).trim();
+                if (description.isEmpty()) {
+                    throw new KairoException(
+                            "The description of a todo cannot be empty.");
+                }
+                yield addTask(new Todo(description));
+            }
+            case DEADLINE -> addTask(parseDeadline(input));
+            case EVENT -> addTask(parseEvent(input));
+            case FIND -> {
+                String keyword = input.substring("find".length()).trim();
+                if (keyword.isEmpty()) {
+                    throw new KairoException(
+                            "Please provide a keyword to find.");
+                }
+                yield ui.formatMatchingTasks(tasks.find(keyword));
+            }
+            case BYE -> {
+                isExit = true;
+                yield ui.getGoodbyeMessage();
+            }
+            case UNKNOWN -> throw new KairoException(
                     "I'm sorry, but I don't know what that means.");
         };
     }
@@ -132,66 +165,56 @@ public class Kairo {
     }
 
     /**
-     * Marks a task as completed and saves the updated list.
+     * Validates a deadline command and creates its task.
      *
-     * @param input Complete mark command.
-     * @return Confirmation containing the marked task.
-     * @throws KairoException If the task number is invalid or saving fails.
+     * @param input Complete deadline command.
+     * @return Deadline described by the command.
+     * @throws KairoException If the description, marker, or date is invalid.
      */
-    private String markTask(String input) throws KairoException {
-        int index = Parser.parseTaskIndex(input, "mark", tasks.size());
-        Task task = tasks.mark(index);
-        storage.save(tasks.getTasks());
-        return ui.formatMarked(task);
+    private Deadline parseDeadline(String input) throws KairoException {
+        String arguments = input.substring("deadline".length()).trim();
+        int byPosition = arguments.indexOf(" /by ");
+        if (byPosition <= 0
+                || byPosition + " /by ".length() >= arguments.length()) {
+            throw new KairoException(
+                    "Use: deadline DESCRIPTION /by DATE");
+        }
+        String description = arguments.substring(0, byPosition).trim();
+        String by = arguments.substring(byPosition + " /by ".length()).trim();
+        try {
+            return new Deadline(description, by);
+        } catch (DateTimeParseException exception) {
+            throw new KairoException(
+                    "Enter the deadline date in yyyy-MM-dd format.");
+        }
     }
 
     /**
-     * Marks a task as incomplete and saves the updated list.
+     * Validates an event command and creates its task.
      *
-     * @param input Complete unmark command.
-     * @return Confirmation containing the unmarked task.
-     * @throws KairoException If the task number is invalid or saving fails.
+     * @param input Complete event command.
+     * @return Event described by the command.
+     * @throws KairoException If the description, markers, or dates are invalid.
      */
-    private String unmarkTask(String input) throws KairoException {
-        int index = Parser.parseTaskIndex(input, "unmark", tasks.size());
-        Task task = tasks.unmark(index);
-        storage.save(tasks.getTasks());
-        return ui.formatUnmarked(task);
-    }
-
-    /**
-     * Deletes a task and saves the updated list.
-     *
-     * @param input Complete delete command.
-     * @return Confirmation containing the removed task and remaining count.
-     * @throws KairoException If the task number is invalid or saving fails.
-     */
-    private String deleteTask(String input) throws KairoException {
-        int index = Parser.parseTaskIndex(input, "delete", tasks.size());
-        Task task = tasks.delete(index);
-        storage.save(tasks.getTasks());
-        return ui.formatDeleted(task, tasks.size());
-    }
-
-    /**
-     * Finds tasks whose descriptions contain the requested keyword.
-     *
-     * @param input Complete find command.
-     * @return Matching tasks or a no-matches message.
-     * @throws KairoException If the keyword is missing.
-     */
-    private String findTasks(String input) throws KairoException {
-        String keyword = Parser.parseFindKeyword(input);
-        return ui.formatMatchingTasks(tasks.find(keyword));
-    }
-
-    /**
-     * Ends this session and creates its farewell response.
-     *
-     * @return Goodbye message.
-     */
-    private String exit() {
-        isExit = true;
-        return ui.getGoodbyeMessage();
+    private Event parseEvent(String input) throws KairoException {
+        String arguments = input.substring("event".length()).trim();
+        int fromPosition = arguments.indexOf(" /from ");
+        int toPosition = arguments.indexOf(" /to ");
+        if (fromPosition <= 0
+                || toPosition <= fromPosition + " /from ".length()
+                || toPosition + " /to ".length() >= arguments.length()) {
+            throw new KairoException(
+                    "Use: event DESCRIPTION /from START /to END");
+        }
+        String description = arguments.substring(0, fromPosition).trim();
+        String from = arguments.substring(
+                fromPosition + " /from ".length(), toPosition).trim();
+        String to = arguments.substring(toPosition + " /to ".length()).trim();
+        try {
+            return new Event(description, from, to);
+        } catch (DateTimeParseException exception) {
+            throw new KairoException(
+                    "Enter the event dates in yyyy-MM-dd format.");
+        }
     }
 }
