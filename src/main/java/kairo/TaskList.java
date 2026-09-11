@@ -1,6 +1,7 @@
 package kairo;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 /**
  * Stores and manages Kairo's task list.
@@ -84,16 +85,11 @@ public class TaskList {
      * @return Tasks with matching descriptions.
      */
     public ArrayList<Task> find(String keyword) {
-        ArrayList<Task> matchingTasks = new ArrayList<>();
         String normalizedKeyword = keyword.toLowerCase();
 
-        for (Task task : tasks) {
-            if (task.description.toLowerCase().contains(normalizedKeyword)) {
-                matchingTasks.add(task);
-            }
-        }
-
-        return matchingTasks;
+        return tasks.stream()
+                .filter(task -> task.description.toLowerCase().contains(normalizedKeyword))
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
