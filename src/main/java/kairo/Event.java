@@ -28,6 +28,15 @@ public class Event extends Task {
     }
 
     /**
+     * Returns the date on which this event starts.
+     *
+     * @return Event start date.
+     */
+    public LocalDate getStartDate() {
+        return from;
+    }
+
+    /**
      * Returns the event in its display format.
      *
      * @return formatted event

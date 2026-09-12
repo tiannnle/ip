@@ -112,6 +112,7 @@ public class Kairo {
             case DEADLINE -> addTask(Parser.parseDeadline(input));
             case EVENT -> addTask(Parser.parseEvent(input));
             case FIND -> findTasks(input);
+            case SORT -> sortTasks(input);
             case BYE -> exit();
             default -> throw new KairoException(
                     "I'm sorry, but I don't know what that means.");
@@ -183,6 +184,26 @@ public class Kairo {
     private String findTasks(String input) throws KairoException {
         String keyword = Parser.parseFindKeyword(input);
         return ui.formatMatchingTasks(tasks.find(keyword));
+    }
+
+    /**
+     * Sorts a copy of the task list and saves it before replacing the active list.
+     *
+     * @param input Complete sort command.
+     * @return Task list with its new order and numbering.
+     * @throws KairoException If the sort field is invalid or saving fails.
+     */
+    private String sortTasks(String input) throws KairoException {
+        String sortKey = Parser.parseSortKey(input);
+        TaskList sortedTasks = new TaskList(tasks.getTasks());
+        if (sortKey.equals("name")) {
+            sortedTasks.sortByName();
+        } else {
+            sortedTasks.sortByDate();
+        }
+        storage.save(sortedTasks.getTasks());
+        tasks = sortedTasks;
+        return ui.formatTaskList(tasks.getTasks());
     }
 
     /**
