@@ -1,6 +1,8 @@
 package kairo;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 /**
@@ -101,6 +103,40 @@ public class TaskList {
         return tasks.stream()
                 .filter(task -> task.description.toLowerCase().contains(normalizedKeyword))
                 .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    /**
+     * Sorts tasks alphabetically by description, ignoring case.
+     * Tasks with equal descriptions retain their relative order.
+     */
+    public void sortByName() {
+        tasks.sort(Comparator.comparing(
+                task -> task.description, String.CASE_INSENSITIVE_ORDER));
+    }
+
+    /**
+     * Sorts tasks by deadline date or event start date, earliest first.
+     * Tasks without dates appear last. Equal dates retain their relative order.
+     */
+    public void sortByDate() {
+        tasks.sort(Comparator.comparing(
+                TaskList::getSortDate, Comparator.nullsLast(Comparator.naturalOrder())));
+    }
+
+    /**
+     * Finds the date used to place a task in chronological order.
+     *
+     * @param task Task to inspect.
+     * @return Deadline or event start date, or null for a task without a date.
+     */
+    private static LocalDate getSortDate(Task task) {
+        if (task instanceof Deadline deadline) {
+            return deadline.getDeadlineDate();
+        }
+        if (task instanceof Event event) {
+            return event.getStartDate();
+        }
+        return null;
     }
 
     /**

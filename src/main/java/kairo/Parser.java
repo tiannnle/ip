@@ -33,6 +33,7 @@ public final class Parser {
             case "deadline" -> CommandType.DEADLINE;
             case "event" -> CommandType.EVENT;
             case "find" -> CommandType.FIND;
+            case "sort" -> CommandType.SORT;
             default -> CommandType.UNKNOWN;
         };
     }
@@ -121,6 +122,22 @@ public final class Parser {
                     "Please provide a keyword to find.");
         }
         return keyword;
+    }
+
+    /**
+     * Extracts and validates the field used to sort tasks.
+     *
+     * @param input Complete sort command.
+     * @return Either {@code name} or {@code date}.
+     * @throws KairoException If the command does not specify one valid field.
+     */
+    public static String parseSortKey(String input) throws KairoException {
+        String[] parts = input.trim().split("\\s+");
+        if (parts.length != 2 || !parts[0].equals("sort")
+                || (!parts[1].equals("name") && !parts[1].equals("date"))) {
+            throw new KairoException("Use: sort name OR sort date");
+        }
+        return parts[1];
     }
 
     /**
