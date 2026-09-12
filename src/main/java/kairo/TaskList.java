@@ -40,7 +40,12 @@ public class TaskList {
      * @param task Task to add.
      */
     public void add(Task task) {
+        int previousSize = tasks.size();
         tasks.add(task);
+        assert tasks.size() == previousSize + 1
+                : "Adding a task must increase the task count by one";
+        assert tasks.get(tasks.size() - 1) == task
+                : "The new task must be appended to the list";
     }
 
     /**
@@ -52,6 +57,7 @@ public class TaskList {
     public Task mark(int index) {
         Task task = tasks.get(index);
         task.markAsDone();
+        assert task.isDone : "A marked task must be completed";
         return task;
     }
 
@@ -64,6 +70,7 @@ public class TaskList {
     public Task unmark(int index) {
         Task task = tasks.get(index);
         task.markAsNotDone();
+        assert !task.isDone : "An unmarked task must be incomplete";
         return task;
     }
 
@@ -74,7 +81,11 @@ public class TaskList {
      * @return Deleted task.
      */
     public Task delete(int index) {
-        return tasks.remove(index);
+        int previousSize = tasks.size();
+        Task removedTask = tasks.remove(index);
+        assert tasks.size() == previousSize - 1
+                : "Deleting a task must decrease the task count by one";
+        return removedTask;
     }
 
     /**
