@@ -39,6 +39,7 @@ dependencies {
 
 test {
     useJUnitPlatform()
+    enableAssertions = true
 
     testLogging {
         events 'passed', 'skipped', 'failed'
@@ -53,6 +54,7 @@ test {
 
 application {
     mainClass = 'kairo.Launcher'
+    applicationDefaultJvmArgs = ['-ea']
 }
 
 jar {
