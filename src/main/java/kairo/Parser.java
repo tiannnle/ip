@@ -1,15 +1,16 @@
 package kairo;
 
 import java.time.format.DateTimeParseException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Parses commands and arguments entered by the user.
  */
 public final class Parser {
 
-    private static final String DEADLINE_MARKER = " /by ";
-    private static final String EVENT_START_MARKER = " /from ";
-    private static final String EVENT_END_MARKER = " /to ";
+    private static final Pattern DATE_MARKER =
+            Pattern.compile("(?<!\\S)/(?:by|from|to)(?!\\S)");
 
     private Parser() {
     }
@@ -43,7 +44,7 @@ public final class Parser {
      *
      * @param input Complete, trimmed todo command.
      * @return Todo described by the command.
-     * @throws KairoException If the description is empty.
+     * @throws KairoException If the description is empty or contains unsupported characters.
      */
     public static Todo parseTodo(String input) throws KairoException {
         String description = input.substring("todo".length()).trim();
@@ -51,6 +52,7 @@ public final class Parser {
             throw new KairoException(
                     "The description of a todo cannot be empty.");
         }
+        validateDescription(description);
         return new Todo(description);
     }
 
@@ -63,16 +65,11 @@ public final class Parser {
      */
     public static Deadline parseDeadline(String input) throws KairoException {
         String arguments = input.substring("deadline".length()).trim();
-        int byPosition = arguments.indexOf(DEADLINE_MARKER);
-        if (byPosition <= 0
-                || byPosition + DEADLINE_MARKER.length() >= arguments.length()) {
-            throw new KairoException(
-                    "Use: deadline DESCRIPTION /by DATE");
-        }
-        String description = arguments.substring(0, byPosition).trim();
-        String by = arguments.substring(byPosition + DEADLINE_MARKER.length()).trim();
+        String[] fields = parseDateFields(
+                arguments, "Use: deadline DESCRIPTION /by DATE", "/by");
+        validateDescription(fields[0]);
         try {
-            return new Deadline(description, by);
+            return new Deadline(fields[0], fields[1]);
         } catch (DateTimeParseException exception) {
             throw new KairoException(
                     "Enter the deadline date in yyyy-MM-dd format.");
@@ -88,23 +85,81 @@ public final class Parser {
      */
     public static Event parseEvent(String input) throws KairoException {
         String arguments = input.substring("event".length()).trim();
-        int fromPosition = arguments.indexOf(EVENT_START_MARKER);
-        int toPosition = arguments.indexOf(EVENT_END_MARKER);
-        if (fromPosition <= 0
-                || toPosition <= fromPosition + EVENT_START_MARKER.length()
-                || toPosition + EVENT_END_MARKER.length() >= arguments.length()) {
-            throw new KairoException(
-                    "Use: event DESCRIPTION /from START /to END");
-        }
-        String description = arguments.substring(0, fromPosition).trim();
-        String from = arguments.substring(
-                fromPosition + EVENT_START_MARKER.length(), toPosition).trim();
-        String to = arguments.substring(toPosition + EVENT_END_MARKER.length()).trim();
+        String[] fields = parseDateFields(
+                arguments, "Use: event DESCRIPTION /from START /to END", "/from", "/to");
+        validateDescription(fields[0]);
         try {
-            return new Event(description, from, to);
+            return new Event(fields[0], fields[1], fields[2]);
         } catch (DateTimeParseException exception) {
             throw new KairoException(
                     "Enter the event dates in yyyy-MM-dd format.");
+        } catch (IllegalArgumentException exception) {
+            throw new KairoException(exception.getMessage());
+        }
+    }
+
+    /**
+     * Splits date arguments at standalone markers, allowing spaces or tabs.
+     * Each expected marker must appear exactly once and in the given order.
+     *
+     * @param arguments Description followed by date markers and values.
+     * @param usage Error message describing the required command format.
+     * @param markers Required markers in their expected order.
+     * @return Non-empty description and date fields.
+     * @throws KairoException If markers or fields are missing or repeated.
+     */
+    private static String[] parseDateFields(
+            String arguments, String usage, String... markers) throws KairoException {
+        String[] fields = new String[markers.length + 1];
+        Matcher matcher = DATE_MARKER.matcher(arguments);
+        int fieldIndex = 0;
+        int previousEnd = 0;
+        while (matcher.find()) {
+            if (fieldIndex >= markers.length || !matcher.group().equals(markers[fieldIndex])) {
+                throw new KairoException(usage);
+            }
+            fields[fieldIndex] = arguments.substring(previousEnd, matcher.start()).trim();
+            if (fields[fieldIndex].isEmpty()) {
+                throw new KairoException(usage);
+            }
+            previousEnd = matcher.end();
+            fieldIndex++;
+        }
+        if (fieldIndex != markers.length) {
+            throw new KairoException(usage);
+        }
+        fields[fieldIndex] = arguments.substring(previousEnd).trim();
+        if (fields[fieldIndex].isEmpty()) {
+            throw new KairoException(usage);
+        }
+        return fields;
+    }
+
+    /**
+     * Rejects characters that cannot safely be stored in a task description.
+     *
+     * @param description Task description to check.
+     * @throws KairoException If the description contains a pipe or line break.
+     */
+    private static void validateDescription(String description) throws KairoException {
+        if (description.contains("|")) {
+            throw new KairoException("Please remove the pipe character (|) from the task description.");
+        }
+        if (description.contains("\n") || description.contains("\r")) {
+            throw new KairoException("Please keep the task description on one line.");
+        }
+    }
+
+    /**
+     * Checks that a command such as list or bye has no extra arguments.
+     *
+     * @param input Complete command entered by the user.
+     * @param command Command word expected on its own.
+     * @throws KairoException If extra arguments were supplied.
+     */
+    public static void validateNoArguments(String input, String command) throws KairoException {
+        if (!input.trim().equals(command)) {
+            throw new KairoException("Use: " + command + " (without extra arguments)");
         }
     }
 

@@ -20,11 +20,16 @@ public class Event extends Task {
      * @param description description of the event
      * @param from        starting time
      * @param to          ending time
+     * @throws java.time.format.DateTimeParseException If either date is invalid.
+     * @throws IllegalArgumentException If the end precedes the start.
      */
     public Event(String description, String from, String to) {
         super(description);
         this.from = LocalDate.parse(from);
         this.to = LocalDate.parse(to);
+        if (this.to.isBefore(this.from)) {
+            throw new IllegalArgumentException("The event end date cannot be before its start date.");
+        }
     }
 
     /**

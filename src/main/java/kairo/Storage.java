@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Handles saving Kairo's tasks to a file.
@@ -23,28 +25,38 @@ public class Storage {
     }
 
     /**
-     * Saves all tasks to the data file.
+     * Writes tasks to a temporary file before atomically replacing the data file.
      *
      * @param tasks tasks to save
      * @throws KairoException if the file cannot be written
      */
     public void save(ArrayList<Task> tasks) throws KairoException {
+        Path temporaryFile = null;
         try {
-            Path parentDirectory = filePath.getParent();
-
-            if (parentDirectory != null) {
-                Files.createDirectories(parentDirectory);
+            Path targetFile = filePath.toAbsolutePath();
+            if (Files.isDirectory(targetFile)) {
+                throw new IOException("The task file location is a directory.");
             }
-
+            Path parentDirectory = targetFile.getParent();
+            Files.createDirectories(parentDirectory);
             ArrayList<String> lines = new ArrayList<>();
-
             for (Task task : tasks) {
                 lines.add(task.toDataString());
             }
-
-            Files.write(filePath, lines, StandardCharsets.UTF_8);
+            temporaryFile = Files.createTempFile(parentDirectory, "kairo-", ".tmp");
+            Files.write(temporaryFile, lines, StandardCharsets.UTF_8);
+            Files.move(temporaryFile, targetFile,
+                    StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             throw new KairoException("I could not save your tasks.");
+        } finally {
+            if (temporaryFile != null) {
+                try {
+                    Files.deleteIfExists(temporaryFile);
+                } catch (IOException e) {
+                    // Cleanup must not hide the result of saving the task file.
+                }
+            }
         }
     }
 
@@ -62,13 +74,19 @@ public class Storage {
         }
 
         try {
-            for (String line
-                    : Files.readAllLines(filePath, StandardCharsets.UTF_8)) {
+            List<String> lines = Files.readAllLines(filePath, StandardCharsets.UTF_8);
+            for (int i = 0; i < lines.size(); i++) {
+                String line = lines.get(i);
                 if (!line.isBlank()) {
-                    tasks.add(parseTask(line));
+                    try {
+                        tasks.add(parseTask(line));
+                    } catch (KairoException | DateTimeParseException | IllegalArgumentException e) {
+                        throw new KairoException("Invalid saved task at line " + (i + 1)
+                                + ". Fix the task file and restart Kairo.");
+                    }
                 }
             }
-        } catch (IOException | DateTimeParseException e) {
+        } catch (IOException e) {
             throw new KairoException("I could not load your saved tasks.");
         }
 
@@ -87,6 +105,9 @@ public class Storage {
 
         if (parts.length < 3) {
             throw new KairoException("The saved task data is invalid.");
+        }
+        if (parts[2].isBlank()) {
+            throw new KairoException("A saved task description cannot be empty.");
         }
 
         boolean isDone;
