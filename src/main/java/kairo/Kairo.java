@@ -76,6 +76,12 @@ public class Kairo {
         if (isExit) {
             return ui.getGoodbyeMessage();
         }
+        if (input == null || input.isBlank()) {
+            return ui.formatError("Please enter a command.");
+        }
+        if (input.contains("\n") || input.contains("\r")) {
+            return ui.formatError("Please enter one command at a time.");
+        }
         String command = input.trim();
         try {
             return processCommand(Parser.parseCommandType(command), command);
@@ -103,8 +109,16 @@ public class Kairo {
      */
     private String processCommand(CommandType commandType, String input)
             throws KairoException {
+        if (!startupError.isEmpty()
+                && commandType != CommandType.BYE && commandType != CommandType.UNKNOWN) {
+            throw new KairoException(
+                    "Your saved tasks could not be loaded. Fix the task file and restart Kairo.");
+        }
         return switch (commandType) {
-            case LIST -> ui.formatTaskList(tasks.getTasks());
+            case LIST -> {
+                Parser.validateNoArguments(input, "list");
+                yield ui.formatTaskList(tasks.getTasks());
+            }
             case MARK -> markTask(input);
             case UNMARK -> unmarkTask(input);
             case DELETE -> deleteTask(input);
@@ -113,7 +127,10 @@ public class Kairo {
             case EVENT -> addTask(Parser.parseEvent(input));
             case FIND -> findTasks(input);
             case SORT -> sortTasks(input);
-            case BYE -> exit();
+            case BYE -> {
+                Parser.validateNoArguments(input, "bye");
+                yield exit();
+            }
             default -> throw new KairoException(
                     "I'm sorry, but I don't know what that means.");
         };
@@ -127,8 +144,9 @@ public class Kairo {
      * @throws KairoException If saving fails.
      */
     private String addTask(Task task) throws KairoException {
-        tasks.add(task);
-        storage.save(tasks.getTasks());
+        TaskList updatedTasks = new TaskList(tasks.getTasks());
+        updatedTasks.add(task);
+        saveTasks(updatedTasks);
         return ui.formatTaskAdded(task, tasks.size());
     }
 
@@ -140,10 +158,7 @@ public class Kairo {
      * @throws KairoException If the task number is invalid or saving fails.
      */
     private String markTask(String input) throws KairoException {
-        int index = Parser.parseTaskIndex(input, "mark", tasks.size());
-        Task task = tasks.mark(index);
-        storage.save(tasks.getTasks());
-        return ui.formatMarked(task);
+        return ui.formatMarked(updateCompletion(input, "mark", true));
     }
 
     /**
@@ -154,10 +169,39 @@ public class Kairo {
      * @throws KairoException If the task number is invalid or saving fails.
      */
     private String unmarkTask(String input) throws KairoException {
-        int index = Parser.parseTaskIndex(input, "unmark", tasks.size());
-        Task task = tasks.unmark(index);
-        storage.save(tasks.getTasks());
-        return ui.formatUnmarked(task);
+        return ui.formatUnmarked(updateCompletion(input, "unmark", false));
+    }
+
+    /**
+     * Updates completion, restoring the previous status if saving fails.
+     *
+     * @param input Complete mark or unmark command.
+     * @param command Command word used to validate the task number.
+     * @param isDone Desired completion status.
+     * @return Updated task after a successful save.
+     * @throws KairoException If the task number is invalid or saving fails.
+     */
+    private Task updateCompletion(String input, String command, boolean isDone)
+            throws KairoException {
+        int index = Parser.parseTaskIndex(input, command, tasks.size());
+        Task task = tasks.getTasks().get(index);
+        boolean wasDone = task.isDone;
+        if (isDone) {
+            tasks.mark(index);
+        } else {
+            tasks.unmark(index);
+        }
+        try {
+            storage.save(tasks.getTasks());
+        } catch (KairoException exception) {
+            if (wasDone) {
+                task.markAsDone();
+            } else {
+                task.markAsNotDone();
+            }
+            throw exception;
+        }
+        return task;
     }
 
     /**
@@ -169,8 +213,9 @@ public class Kairo {
      */
     private String deleteTask(String input) throws KairoException {
         int index = Parser.parseTaskIndex(input, "delete", tasks.size());
-        Task task = tasks.delete(index);
-        storage.save(tasks.getTasks());
+        TaskList updatedTasks = new TaskList(tasks.getTasks());
+        Task task = updatedTasks.delete(index);
+        saveTasks(updatedTasks);
         return ui.formatDeleted(task, tasks.size());
     }
 
@@ -201,9 +246,19 @@ public class Kairo {
         } else {
             sortedTasks.sortByDate();
         }
-        storage.save(sortedTasks.getTasks());
-        tasks = sortedTasks;
+        saveTasks(sortedTasks);
         return ui.formatTaskList(tasks.getTasks());
+    }
+
+    /**
+     * Saves a proposed task list before making it the active list.
+     *
+     * @param updatedTasks Proposed task order and contents.
+     * @throws KairoException If the proposed list could not be saved.
+     */
+    private void saveTasks(TaskList updatedTasks) throws KairoException {
+        storage.save(updatedTasks.getTasks());
+        tasks = updatedTasks;
     }
 
     /**
