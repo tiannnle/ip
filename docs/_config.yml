@@ -1,0 +1,9 @@
+title: Kairo
+description: Your tasks, one message at a time.
+theme: jekyll-theme-cayman
+url: "https://tiannnle.github.io"
+baseurl: "/ip"
+show_downloads: false
+markdown: kramdown
+kramdown:
+  input: GFM
