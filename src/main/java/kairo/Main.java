@@ -9,6 +9,7 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -223,12 +224,15 @@ public class Main extends Application {
     }
 
     /**
-     * Scrolls after new messages are laid out, without reacting to window resizing.
+     * Updates the full scene layout before scrolling to the latest message.
+     * Called only when messages are added, so resizing does not force a scroll.
      */
     private void scrollToLatest() {
         Platform.runLater(() -> {
-            dialogContainer.applyCss();
-            dialogContainer.layout();
+            Parent root = scrollPane.getScene().getRoot();
+            root.applyCss();
+            // Size the viewport and its content before setting the scroll position.
+            root.layout();
             scrollPane.setVvalue(1.0);
         });
     }

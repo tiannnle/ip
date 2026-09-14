@@ -25,6 +25,7 @@ Use Java 25. From the project folder, run `./gradlew test`, then `./gradlew run`
 | Open Kairo. | The title says Kairo and the Commands menu is visible. |
 | Select Commands, then Add a todo. | The input shows `todo read book`; the task is not added yet. |
 | Press Enter. | The blue command bubble and a wider Kairo reply appear; the input clears. |
+| Keep adding commands until the conversation first needs a scrollbar, then enter an invalid command. | The complete latest error reply scrolls into view immediately. Repeat with a long task description to check that wrapping does not leave the reply below the viewport. |
 | Type `event meeting /from 2026-09-19 /to 2026-09-18` and press Enter. | A red error card appears and the command stays available for editing. |
 | Correct the end date to `2026-09-19`, then press Enter. | The input border clears while editing; the corrected event is added. |
 | Select Commands, then Sort by date, then Send. | Kairo displays the sorted list. |

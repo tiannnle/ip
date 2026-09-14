@@ -11,8 +11,20 @@ changes are saved automatically for your next session.
 
 ## Quick start
 
-1. Install **Java 25**. You can obtain a Java 25 JDK from
-   [Azul Zulu](https://www.azul.com/downloads/).
+1. Install **Java 25** for your operating system.
+
+   **Windows/Linux:** Obtain a Java 25 JDK from [Azul Zulu](https://www.azul.com/downloads/).
+
+   **macOS:** Use **Zulu JDK 25 with JavaFX** (`25.0.3.fx-zulu`), following the
+   [Mac installation guide](https://se-education.org/guides/tutorials/javaInstallationMac.html).
+   This distribution includes the JavaFX support needed to launch Kairo on a Mac.
+   If it is already installed through SDKMAN, select it in the terminal you will
+   use to launch Kairo:
+
+   ```bash
+   sdk use java 25.0.3.fx-zulu
+   ```
+
 2. Download `kairo.jar` from the [Releases page](https://github.com/tiannnle/ip/releases)
    and place it in a folder where you want to keep Kairo and its tasks.
 3. Open a terminal in that folder and run:
@@ -169,6 +181,7 @@ Launch it from that new folder. To keep a backup, copy `data/kairo.txt` while Ka
 | Problem | What to do |
 | --- | --- |
 | Java reports that the JAR was compiled by a newer version. | Run `java -version` in the terminal and switch to Java 25. |
+| On macOS, startup fails with `Error initializing QuantumRenderer` or a native-library architecture error. | Follow the [Mac installation guide](https://se-education.org/guides/tutorials/javaInstallationMac.html) to install Zulu JDK 25 with JavaFX. Run `sdk use java 25.0.3.fx-zulu` in the same terminal before launching Kairo again. |
 | My saved tasks seem to be missing. | Check that you launched Kairo from the folder containing your original `data` folder. |
 | A command shows a format or date error. | Correct the retained input using the command reference and a real date in `yyyy-MM-dd` format. |
 | Kairo could not save the tasks. | Check that the launch folder is writable and `data/kairo.txt` is a file. Try a writable local folder. The failed change is not applied; retry after fixing the problem. |
